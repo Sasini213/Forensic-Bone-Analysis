@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction History - Forensic Bone Analysis</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460); min-height: 100vh; color: white; }
+        .navbar { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h1 { color: #4fc3f7; font-size: 20px; }
+        .navbar-right { display: flex; gap: 15px; align-items: center; }
+        .navbar-right span { color: #aaa; font-size: 14px; }
+        .nav-btn { padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: bold; }
+        .nav-btn-new { background: rgba(79,195,247,0.2); color: #4fc3f7; border: 1px solid #4fc3f7; }
+        .nav-btn-logout { background: rgba(220,53,69,0.2); color: #ff6b6b; border: 1px solid #ff6b6b; }
+        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+        .page-title { text-align: center; margin-bottom: 30px; }
+        .page-title h2 { font-size: 26px; color: #4fc3f7; }
+        .page-title p { color: #aaa; margin-top: 8px; font-size: 14px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }
+        .stat-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 20px; text-align: center; }
+        .stat-card h3 { font-size: 32px; font-weight: bold; color: #4fc3f7; }
+        .stat-card p { color: #aaa; font-size: 13px; margin-top: 5px; }
+        .table-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 25px; }
+        .table-card h3 { color: #4fc3f7; margin-bottom: 20px; font-size: 16px; border-bottom: 1px solid rgba(79,195,247,0.3); padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: rgba(79,195,247,0.15); color: #4fc3f7; padding: 12px 15px; text-align: left; font-size: 13px; text-transform: uppercase; }
+        td { padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; color: #ddd; }
+        tr:hover td { background: rgba(255,255,255,0.03); }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .badge-male { background: rgba(79,195,247,0.2); color: #4fc3f7; border: 1px solid rgba(79,195,247,0.4); }
+        .badge-female { background: rgba(244,143,177,0.2); color: #f48fb1; border: 1px solid rgba(244,143,177,0.4); }
+        .badge-age { background: rgba(105,240,174,0.2); color: #69f0ae; border: 1px solid rgba(105,240,174,0.4); }
+        .empty-state { text-align: center; padding: 60px 20px; }
+        .empty-state p { color: #aaa; font-size: 16px; margin-bottom: 20px; }
+        .btn-new { display: inline-block; padding: 12px 25px; background: linear-gradient(135deg, #4fc3f7, #0288d1); border-radius: 8px; color: white; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <h1>🦴 Forensic Bone Analysis</h1>
+    <div class="navbar-right">
+        <span>👤 {{ full_name }}</span>
+        <a href="/index" class="nav-btn nav-btn-new">🔬 New Analysis</a>
+        <a href="/logout" class="nav-btn nav-btn-logout">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="page-title">
+        <h2>📋 Prediction History</h2>
+        <p>All past forensic analysis cases linked to your account</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>{{ predictions | length }}</h3>
+            <p>Total Cases</p>
+        </div>
+        <div class="stat-card">
+            <h3>{{ predictions | selectattr(3, 'equalto', 'Male') | list | length }}</h3>
+            <p>Male Predictions</p>
+        </div>
+        <div class="stat-card">
+            <h3>{{ predictions | selectattr(3, 'equalto', 'Female') | list | length }}</h3>
+            <p>Female Predictions</p>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <h3>Case Records</h3>
+        {% if predictions %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Case Reference</th>
+                    <th>Sex</th>
+                    <th>Sex Conf.</th>
+                    <th>Age Range</th>
+                    <th>Age Conf.</th>
+                    <th>Bones Used</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in predictions %}
+                <tr>
+                    <td style="color: #4fc3f7; font-family: monospace; font-size: 12px;">{{ p[2] }}</td>
+                    <td>
+                        <span class="badge badge-{{ p[3] | lower }}">
+                            {% if p[3] == 'Male' %}♂{% else %}♀{% endif %} {{ p[3] }}
+                        </span>
+                    </td>
+                    <td>{{ p[4] }}%</td>
+                    <td><span class="badge badge-age">{{ p[5] }} yrs</span></td>
+                   <td>{{ "%.1f"|format(p[6]|float) }}%</td>
+                    <td style="color: #aaa; font-size: 12px;">{{ p[7] }}</td>
+                    <td style="color: #aaa; font-size: 12px;">{{ p[8][:16] if p[8] else '' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <p>No predictions yet. Start your first analysis!</p>
+            <a href="/index" class="btn-new">🔬 New Analysis</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+</body>
+</html>

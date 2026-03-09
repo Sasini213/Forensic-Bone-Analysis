@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bone Analysis - Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            min-height: 100vh;
+            color: white;
+        }
+        /* Navbar */
+        .navbar {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar h1 { color: #4fc3f7; font-size: 20px; }
+        .navbar-right { display: flex; gap: 15px; align-items: center; }
+        .navbar-right span { color: #aaa; font-size: 14px; }
+        .nav-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+            transition: opacity 0.3s;
+        }
+        .nav-btn-history {
+            background: rgba(79,195,247,0.2);
+            color: #4fc3f7;
+            border: 1px solid #4fc3f7;
+        }
+        .nav-btn-logout {
+            background: rgba(220,53,69,0.2);
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+        }
+        .nav-btn:hover { opacity: 0.8; }
+
+        /* Main */
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+        .page-title { text-align: center; margin-bottom: 30px; }
+        .page-title h2 { font-size: 26px; color: #4fc3f7; }
+        .page-title p { color: #aaa; margin-top: 8px; font-size: 14px; }
+
+        /* Alert */
+        .alert {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        .alert-warning { background: rgba(255,193,7,0.2); color: #ffd54f; border: 1px solid rgba(255,193,7,0.3); }
+
+        /* Bone Selection */
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .card h3 {
+            color: #4fc3f7;
+            margin-bottom: 15px;
+            font-size: 16px;
+            border-bottom: 1px solid rgba(79,195,247,0.3);
+            padding-bottom: 10px;
+        }
+        .bone-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+        .bone-checkbox {
+            display: none;
+        }
+        .bone-label {
+            display: block;
+            padding: 12px 8px;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+            color: #ccc;
+        }
+        .bone-label:hover { border-color: #4fc3f7; color: white; }
+        .bone-checkbox:checked + .bone-label {
+            background: rgba(79,195,247,0.2);
+            border-color: #4fc3f7;
+            color: #4fc3f7;
+            font-weight: bold;
+        }
+
+        /* Measurement sections */
+        .measurement-section {
+            display: none;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(79,195,247,0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .measurement-section h4 {
+            color: #4fc3f7;
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
+        .measurement-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        .form-group label {
+            display: block;
+            color: #aaa;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px 10px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px;
+            color: white;
+            font-size: 13px;
+            outline: none;
+        }
+        .form-group input:focus { border-color: #4fc3f7; }
+
+        /* Submit */
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4fc3f7, #0288d1);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s;
+            margin-top: 10px;
+        }
+        .submit-btn:hover { opacity: 0.9; }
+
+        @media (max-width: 600px) {
+            .bone-grid { grid-template-columns: repeat(2, 1fr); }
+            .measurement-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <h1>🦴 Forensic Bone Analysis</h1>
+    <div class="navbar-right">
+        <span>👤 {{ full_name }}</span>
+        <a href="/history" class="nav-btn nav-btn-history">📋 History</a>
+        <a href="/logout" class="nav-btn nav-btn-logout">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="page-title">
+        <h2>Bone Measurement Analysis</h2>
+        <p>Select available bones and enter measurements to predict sex and age range</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="/predict">
+        <!-- Bone Selection -->
+        <div class="card">
+            <h3>Step 1: Select Available Bones</h3>
+            <div class="bone-grid">
+                {% for bone in bone_measurements.keys() %}
+                <div>
+                    <input type="checkbox" class="bone-checkbox"
+                           id="bone_{{ bone }}"
+                           name="bones"
+                           value="{{ bone }}"
+                           onchange="toggleSection('{{ bone }}')">
+                    <label class="bone-label" for="bone_{{ bone }}">
+                        🦴 {{ bone }}
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Measurements -->
+        <div class="card">
+            <h3>Step 2: Enter Measurements (mm)</h3>
+            {% for bone, fields in bone_measurements.items() %}
+            <div class="measurement-section" id="section_{{ bone }}">
+                <h4>{{ bone }} Measurements</h4>
+                <div class="measurement-grid">
+                    {% for field in fields %}
+                    <div class="form-group">
+                        <label>{{ field }}</label>
+                        <input type="number"
+                               name="{{ field }}"
+                               step="0.01"
+                               min="0"
+                               placeholder="0.00">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="submit-btn">🔬 Predict Sex & Age Range</button>
+    </form>
+</div>
+
+<script>
+    function toggleSection(bone) {
+        const section = document.getElementById('section_' + bone);
+        const checkbox = document.getElementById('bone_' + bone);
+        section.style.display = checkbox.checked ? 'block' : 'none';
+    }
+</script>
+
+</body>
+</html>

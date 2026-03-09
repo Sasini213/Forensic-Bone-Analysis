@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .container { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 40px; width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+        .logo { text-align: center; margin-bottom: 30px; }
+        .logo h1 { color: #4fc3f7; font-size: 24px; }
+        .logo p { color: #aaa; font-size: 13px; margin-top: 5px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; color: #ccc; margin-bottom: 8px; font-size: 14px; }
+        input { width: 100%; padding: 12px 15px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; font-size: 14px; outline: none; }
+        input:focus { border-color: #4fc3f7; }
+        .btn { width: 100%; padding: 13px; background: linear-gradient(135deg, #4fc3f7, #0288d1); border: none; border-radius: 8px; color: white; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .btn:hover { opacity: 0.9; }
+        .link { text-align: center; margin-top: 20px; color: #aaa; font-size: 14px; }
+        .link a { color: #4fc3f7; text-decoration: none; }
+        .alert { padding: 10px 15px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; }
+        .alert-danger { background: rgba(220,53,69,0.2); color: #ff6b6b; border: 1px solid rgba(220,53,69,0.3); }
+        .alert-success { background: rgba(40,167,69,0.2); color: #69f0ae; border: 1px solid rgba(40,167,69,0.3); }
+        .password-hint { color: #888; font-size: 12px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="logo">
+        <h1>🦴 Forensic Bone Analysis</h1>
+        <p>Create Your Account</p>
+    </div>
+
+    {% for category, message in get_flashed_messages(with_categories=true) %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+
+    <form method="POST">
+        <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" name="full_name" placeholder="Enter your full name" required>
+        </div>
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" name="username" placeholder="Choose a username" required>
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password" placeholder="Choose a password" required>
+            <p class="password-hint">Minimum 6 characters recommended</p>
+        </div>
+        <button type="submit" class="btn">Create Account</button>
+    </form>
+
+    <div class="link">
+        Already have an account? <a href="/login">Login here</a>
+    </div>
+</div>
+</body>
+</html>
