@@ -2,59 +2,368 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Register</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Forensic Bone Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .container { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 40px; width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
-        .logo { text-align: center; margin-bottom: 30px; }
-        .logo h1 { color: #4fc3f7; font-size: 24px; }
-        .logo p { color: #aaa; font-size: 13px; margin-top: 5px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; color: #ccc; margin-bottom: 8px; font-size: 14px; }
-        input { width: 100%; padding: 12px 15px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: white; font-size: 14px; outline: none; }
-        input:focus { border-color: #4fc3f7; }
-        .btn { width: 100%; padding: 13px; background: linear-gradient(135deg, #4fc3f7, #0288d1); border: none; border-radius: 8px; color: white; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .btn:hover { opacity: 0.9; }
-        .link { text-align: center; margin-top: 20px; color: #aaa; font-size: 14px; }
-        .link a { color: #4fc3f7; text-decoration: none; }
-        .alert { padding: 10px 15px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; }
-        .alert-danger { background: rgba(220,53,69,0.2); color: #ff6b6b; border: 1px solid rgba(220,53,69,0.3); }
-        .alert-success { background: rgba(40,167,69,0.2); color: #69f0ae; border: 1px solid rgba(40,167,69,0.3); }
-        .password-hint { color: #888; font-size: 12px; margin-top: 5px; }
+        body { font-family: 'Inter', sans-serif; background: #d0d4dc; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .card { display: flex; width: 920px; min-height: 580px; border-radius: 20px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.3); }
+
+        /* LEFT — same as login */
+        .left { width: 45%; background: #060d18; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .grid-overlay { position: absolute; inset: 0; background-image: linear-gradient(rgba(100,180,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(100,180,255,0.04) 1px, transparent 1px); background-size: 32px 32px; }
+        .scan { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(120,210,255,0.5), transparent); animation: scan 5s linear infinite; box-shadow: 0 0 14px rgba(120,210,255,0.3); }
+        @keyframes scan { from{top:0%} to{top:100%} }
+        .bracket { position: absolute; width: 22px; height: 22px; border-color: rgba(100,180,255,0.4); border-style: solid; }
+        .bracket-tl { top:18px; left:18px;  border-width: 2px 0 0 2px; }
+        .bracket-tr { top:18px; right:18px; border-width: 2px 2px 0 0; }
+        .bracket-bl { bottom:18px; left:18px;  border-width: 0 0 2px 2px; }
+        .bracket-br { bottom:18px; right:18px; border-width: 0 2px 2px 0; }
+        .status-bar { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; align-items: center; }
+        .status-dot { width:6px; height:6px; border-radius:50%; background:rgba(100,210,255,0.6); animation: blink 2s ease infinite; }
+        .status-dot:nth-child(2){animation-delay:0.6s} .status-dot:nth-child(3){animation-delay:1.2s}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+        .status-text { font-size:9px; letter-spacing:2px; color:rgba(100,200,255,0.5); text-transform:uppercase; }
+        .left-bottom { position:absolute; bottom:0; left:0; right:0; padding:24px 28px; }
+        .welcome-label { font-family:'Playfair Display',serif; font-size:24px; font-weight:600; color:#e8f4ff; letter-spacing:5px; text-transform:uppercase; text-shadow:0 0 30px rgba(100,200,255,0.4); }
+        .welcome-sub { font-size:10px; color:rgba(140,180,220,0.55); letter-spacing:3px; margin-top:4px; text-transform:uppercase; }
+
+        /* RIGHT */
+        .right { width: 55%; background: #fff; display: flex; flex-direction: column; justify-content: center; padding: 40px 52px; }
+        .brand { display:flex; align-items:center; gap:10px; margin-bottom:20px; }
+        .brand-icon { width:34px; height:34px; background:#060d18; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+        .brand-name { font-size:12px; font-weight:600; color:#1a1a2e; letter-spacing:0.5px; }
+        h2 { font-family:'Playfair Display',serif; font-size:26px; font-weight:600; color:#1a1a2e; margin-bottom:4px; }
+        .subtitle { font-size:13px; color:#9aa0b0; margin-bottom:18px; }
+        .alert { padding:10px 14px; border-radius:8px; margin-bottom:12px; font-size:12px; border-left:3px solid; }
+        .alert-danger  { background:#fff0f0; border-color:#e53e3e; color:#c53030; }
+        .alert-success { background:#f0fff4; border-color:#38a169; color:#276749; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 22px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display:block; font-size:11px; font-weight:500; color:#6b7280; letter-spacing:0.8px; text-transform:uppercase; margin-bottom:7px; }
+        .form-group input { width:100%; padding:11px 0; background:transparent; border:none; border-bottom:1.5px solid #e0e0e0; color:#1a1a2e; font-size:14px; font-family:'Inter',sans-serif; outline:none; transition:border-color 0.3s; }
+        .form-group input:focus { border-bottom-color:#060d18; }
+        .form-group input::placeholder { color:#c5c9d4; font-size:13px; }
+
+        /* match indicator */
+        .match-msg { font-size:11px; margin-top:4px; display:block; height:14px; }
+        .match-ok  { color: #38a169; }
+        .match-err { color: #e53e3e; }
+
+        /* password strength */
+        .strength-wrap { margin-top:5px; }
+        .strength-bar-bg { height:3px; background:#f0f0f0; border-radius:2px; overflow:hidden; }
+        .strength-bar { height:100%; width:0%; border-radius:2px; transition:all 0.35s; }
+        .strength-text { font-size:10px; margin-top:3px; display:block; }
+        .s-weak   { width:25%;  background:#e53e3e; }
+        .s-fair   { width:50%;  background:#d69e2e; }
+        .s-good   { width:75%;  background:#3182ce; }
+        .s-strong { width:100%; background:#38a169; }
+
+        /* security box */
+        .security-box { background:#fffbf5; border:1px solid #fde8c8; border-radius:10px; padding:14px 18px; margin-bottom:16px; }
+        .security-label { font-size:11px; font-weight:600; color:#c87941; letter-spacing:1px; text-transform:uppercase; margin-bottom:10px; }
+        .security-box .form-group { margin-bottom:0; }
+        .security-hint { font-size:11px; color:#b0b8c8; margin-top:6px; }
+
+        .btn-submit { width:100%; padding:13px; background:#060d18; border:none; border-radius:50px; color:white; font-size:15px; font-weight:600; font-family:'Inter',sans-serif; cursor:pointer; transition:all 0.3s; }
+        .btn-submit:hover { background:#1a3a5c; box-shadow:0 8px 25px rgba(6,13,24,0.35); transform:translateY(-1px); }
+        .btn-submit:disabled { background:#9aa0b0; cursor:not-allowed; transform:none; box-shadow:none; }
+
+        .login-link { text-align:center; margin-top:14px; font-size:13px; color:#9aa0b0; }
+        .login-link a { color:#060d18; font-weight:600; text-decoration:none; }
+        .login-link a:hover { text-decoration:underline; }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="logo">
-        <h1>🦴 Forensic Bone Analysis</h1>
-        <p>Create Your Account</p>
+<div class="card">
+
+    <!-- LEFT -->
+    <div class="left">
+        <div class="grid-overlay"></div>
+        <div class="scan"></div>
+        <div class="bracket bracket-tl"></div>
+        <div class="bracket bracket-tr"></div>
+        <div class="bracket bracket-bl"></div>
+        <div class="bracket bracket-br"></div>
+        <div class="status-bar">
+            <div class="status-dot"></div>
+            <div class="status-dot"></div>
+            <div class="status-dot"></div>
+            <div class="status-text">New Analyst</div>
+        </div>
+
+        <!-- FULL HUMAN SKELETON SVG -->
+        <svg viewBox="0 0 200 480" width="180" height="432"
+             style="position:relative;z-index:2;opacity:0.75;margin-top:20px"
+             fill="none" stroke="#7bb8d4" stroke-linecap="round" stroke-linejoin="round">
+            <ellipse cx="100" cy="22" rx="18" ry="20" stroke-width="1.5"/>
+            <ellipse cx="93"  cy="20" rx="5" ry="4" stroke-width="1"/>
+            <ellipse cx="107" cy="20" rx="5" ry="4" stroke-width="1"/>
+            <path d="M98,26 L102,26 L100,29 Z" stroke-width="0.8"/>
+            <path d="M83,32 Q100,42 117,32" stroke-width="1.5"/>
+            <path d="M90,36 L110,36" stroke-width="0.8" stroke-dasharray="2,2"/>
+            <line x1="100" y1="42" x2="100" y2="68" stroke-width="2"/>
+            <rect x="96" y="44" width="8" height="4" rx="1" stroke-width="0.8" opacity="0.7"/>
+            <rect x="96" y="50" width="8" height="4" rx="1" stroke-width="0.8" opacity="0.7"/>
+            <rect x="96" y="56" width="8" height="4" rx="1" stroke-width="0.8" opacity="0.7"/>
+            <rect x="96" y="62" width="8" height="4" rx="1" stroke-width="0.8" opacity="0.7"/>
+            <path d="M100,68 Q80,64 68,70" stroke-width="1.8"/>
+            <path d="M100,68 Q120,64 132,70" stroke-width="1.8"/>
+            <line x1="100" y1="68" x2="100" y2="128" stroke-width="2"/>
+            <path d="M100,72 Q82,74 76,84 Q74,90 82,92 Q90,93 100,90" stroke-width="1.2"/>
+            <path d="M100,78 Q80,80 73,91 Q71,98 80,100 Q90,101 100,97" stroke-width="1.2"/>
+            <path d="M100,84 Q79,87 72,99 Q70,107 80,108 Q91,109 100,104" stroke-width="1.2"/>
+            <path d="M100,90 Q80,94 73,106 Q72,114 82,115 Q92,116 100,111" stroke-width="1.2"/>
+            <path d="M100,96 Q82,100 76,112 Q75,120 85,120 Q93,121 100,117" stroke-width="1.2"/>
+            <path d="M100,102 Q84,106 79,117 Q78,124 87,124 Q94,125 100,122" stroke-width="1.2"/>
+            <path d="M100,72 Q118,74 124,84 Q126,90 118,92 Q110,93 100,90" stroke-width="1.2"/>
+            <path d="M100,78 Q120,80 127,91 Q129,98 120,100 Q110,101 100,97" stroke-width="1.2"/>
+            <path d="M100,84 Q121,87 128,99 Q130,107 120,108 Q109,109 100,104" stroke-width="1.2"/>
+            <path d="M100,90 Q120,94 127,106 Q128,114 118,115 Q108,116 100,111" stroke-width="1.2"/>
+            <path d="M100,96 Q118,100 124,112 Q125,120 115,120 Q107,121 100,117" stroke-width="1.2"/>
+            <path d="M100,102 Q116,106 121,117 Q122,124 113,124 Q106,125 100,122" stroke-width="1.2"/>
+            <rect x="96" y="68"  width="8" height="5" rx="1" stroke-width="0.8" opacity="0.6"/>
+            <rect x="96" y="75"  width="8" height="5" rx="1" stroke-width="0.8" opacity="0.6"/>
+            <rect x="96" y="82"  width="8" height="5" rx="1" stroke-width="0.8" opacity="0.6"/>
+            <rect x="96" y="89"  width="8" height="5" rx="1" stroke-width="0.8" opacity="0.6"/>
+            <rect x="96" y="96"  width="8" height="5" rx="1" stroke-width="0.8" opacity="0.6"/>
+            <rect x="96" y="103" width="8" height="5" rx="1" stroke-width="0.8" opacity="0.6"/>
+            <rect x="96" y="110" width="8" height="5" rx="1" stroke-width="0.8" opacity="0.6"/>
+            <rect x="96" y="117" width="8" height="5" rx="1" stroke-width="0.8" opacity="0.6"/>
+            <rect x="96" y="124" width="8" height="5" rx="1" stroke-width="0.8" opacity="0.6"/>
+            <rect x="95" y="131" width="10" height="5" rx="1" stroke-width="1" opacity="0.7"/>
+            <rect x="95" y="138" width="10" height="5" rx="1" stroke-width="1" opacity="0.7"/>
+            <rect x="95" y="145" width="10" height="5" rx="1" stroke-width="1" opacity="0.7"/>
+            <rect x="95" y="152" width="10" height="5" rx="1" stroke-width="1" opacity="0.7"/>
+            <rect x="95" y="159" width="10" height="5" rx="1" stroke-width="1" opacity="0.7"/>
+            <path d="M100,166 Q72,162 64,178 Q60,192 74,198 Q88,202 100,200" stroke-width="1.8"/>
+            <path d="M100,166 Q128,162 136,178 Q140,192 126,198 Q112,202 100,200" stroke-width="1.8"/>
+            <path d="M74,198 Q100,208 126,198" stroke-width="1.5"/>
+            <path d="M94,164 L106,164 L108,184 L100,188 L92,184 Z" stroke-width="1.2"/>
+            <path d="M68,70 Q58,78 60,92 Q62,98 70,96 Q76,94 74,86 Z" stroke-width="1.2"/>
+            <path d="M132,70 Q142,78 140,92 Q138,98 130,96 Q124,94 126,86 Z" stroke-width="1.2"/>
+            <line x1="68" y1="70" x2="56" y2="128" stroke-width="2.2"/>
+            <circle cx="56" cy="128" r="4" stroke-width="1.2"/>
+            <line x1="54" y1="132" x2="48" y2="178" stroke-width="1.8"/>
+            <line x1="58" y1="132" x2="54" y2="178" stroke-width="1.5"/>
+            <ellipse cx="51" cy="180" rx="6" ry="3" stroke-width="1"/>
+            <line x1="44" y1="183" x2="40" y2="196" stroke-width="1"/>
+            <line x1="48" y1="183" x2="46" y2="198" stroke-width="1"/>
+            <line x1="51" y1="183" x2="51" y2="198" stroke-width="1"/>
+            <line x1="54" y1="183" x2="56" y2="197" stroke-width="1"/>
+            <line x1="57" y1="183" x2="60" y2="194" stroke-width="1"/>
+            <line x1="132" y1="70" x2="144" y2="128" stroke-width="2.2"/>
+            <circle cx="144" cy="128" r="4" stroke-width="1.2"/>
+            <line x1="146" y1="132" x2="152" y2="178" stroke-width="1.8"/>
+            <line x1="142" y1="132" x2="146" y2="178" stroke-width="1.5"/>
+            <ellipse cx="149" cy="180" rx="6" ry="3" stroke-width="1"/>
+            <line x1="156" y1="183" x2="160" y2="196" stroke-width="1"/>
+            <line x1="152" y1="183" x2="154" y2="198" stroke-width="1"/>
+            <line x1="149" y1="183" x2="149" y2="198" stroke-width="1"/>
+            <line x1="146" y1="183" x2="144" y2="197" stroke-width="1"/>
+            <line x1="143" y1="183" x2="140" y2="194" stroke-width="1"/>
+            <circle cx="78"  cy="202" r="5" stroke-width="1.5"/>
+            <line x1="78"  y1="207" x2="82"  y2="300" stroke-width="3"/>
+            <ellipse cx="82"  cy="302" rx="9" ry="6" stroke-width="1.5"/>
+            <ellipse cx="82"  cy="298" rx="5" ry="4" stroke-width="1"/>
+            <line x1="82"  y1="308" x2="80"  y2="390" stroke-width="2.2"/>
+            <line x1="86"  y1="310" x2="86"  y2="388" stroke-width="1.5"/>
+            <ellipse cx="82"  cy="392" rx="8" ry="4" stroke-width="1.2"/>
+            <path d="M74,396 Q80,408 90,406 Q94,404 92,398 L82,396" stroke-width="1.5"/>
+            <line x1="78" y1="406" x2="76" y2="414" stroke-width="1"/>
+            <line x1="82" y1="408" x2="81" y2="416" stroke-width="1"/>
+            <line x1="86" y1="407" x2="86" y2="415" stroke-width="1"/>
+            <line x1="89" y1="405" x2="90" y2="413" stroke-width="1"/>
+            <circle cx="122" cy="202" r="5" stroke-width="1.5"/>
+            <line x1="122" y1="207" x2="118" y2="300" stroke-width="3"/>
+            <ellipse cx="118" cy="302" rx="9" ry="6" stroke-width="1.5"/>
+            <ellipse cx="118" cy="298" rx="5" ry="4" stroke-width="1"/>
+            <line x1="118" y1="308" x2="120" y2="390" stroke-width="2.2"/>
+            <line x1="114" y1="310" x2="114" y2="388" stroke-width="1.5"/>
+            <ellipse cx="118" cy="392" rx="8" ry="4" stroke-width="1.2"/>
+            <path d="M126,396 Q120,408 110,406 Q106,404 108,398 L118,396" stroke-width="1.5"/>
+            <line x1="122" y1="406" x2="124" y2="414" stroke-width="1"/>
+            <line x1="118" y1="408" x2="119" y2="416" stroke-width="1"/>
+            <line x1="114" y1="407" x2="114" y2="415" stroke-width="1"/>
+            <line x1="111" y1="405" x2="110" y2="413" stroke-width="1"/>
+            <ellipse cx="100" cy="240" rx="85" ry="220" fill="rgba(100,180,255,0.03)" stroke="none"/>
+        </svg>
+
+        <div class="left-bottom">
+            <div class="welcome-label">Join Us</div>
+            <div class="welcome-sub">Create Your Account</div>
+        </div>
     </div>
 
-    {% for category, message in get_flashed_messages(with_categories=true) %}
-        <div class="alert alert-{{ category }}">{{ message }}</div>
-    {% endfor %}
+    <!-- RIGHT -->
+    <div class="right">
+        <div class="brand">
+            <div class="brand-icon">🦴</div>
+            <div class="brand-name">FORENSIC BONE ANALYSIS</div>
+        </div>
+        <h2>Create Account</h2>
+        <p class="subtitle">Register to access the forensic analysis system</p>
 
-    <form method="POST">
-        <div class="form-group">
-            <label>Full Name</label>
-            <input type="text" name="full_name" placeholder="Enter your full name" required>
-        </div>
-        <div class="form-group">
-            <label>Username</label>
-            <input type="text" name="username" placeholder="Choose a username" required>
-        </div>
-        <div class="form-group">
-            <label>Password</label>
-            <input type="password" name="password" placeholder="Choose a password" required>
-            <p class="password-hint">Minimum 6 characters recommended</p>
-        </div>
-        <button type="submit" class="btn">Create Account</button>
-    </form>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}{% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}{% endif %}
+        {% endwith %}
 
-    <div class="link">
-        Already have an account? <a href="/login">Login here</a>
+        <form method="POST" autocomplete="off">
+            <!-- Row 1: Full Name + Username -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="full_name" placeholder="Your full name" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" name="username" id="username" placeholder="Choose a username" required autocomplete="off">
+                    <span id="username-feedback" style="font-size:11px;margin-top:4px;display:block;height:14px;"></span>
+                </div>
+            </div>
+
+            <!-- Row 2: Password + Confirm Password -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" id="password"
+                           placeholder="Create a strong password" required autocomplete="new-password">
+                    <div class="strength-wrap">
+                        <div class="strength-bar-bg"><div class="strength-bar" id="strength-bar"></div></div>
+                        <span class="strength-text" id="strength-text"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" name="confirm_password" id="confirm_password"
+                           placeholder="Re-enter your password" required autocomplete="new-password">
+                    <span class="match-msg" id="match-msg"></span>
+                </div>
+            </div>
+
+            <!-- Security box -->
+            <div class="security-box">
+                <div class="security-label">🔐 Security Question</div>
+                <div class="form-group">
+                    <label>Choose a Question</label>
+                    <select name="security_question" id="security_question" required
+                            style="width:100%;padding:10px 4px;background:#fff;border:1px solid #e0e0e0;border-radius:6px;color:#1a1a2e;font-size:13px;font-family:'Inter',sans-serif;outline:none;cursor:pointer;margin-top:2px;">
+                        <option value="" disabled selected>Select a security question...</option>
+                        <option value="mother_maiden">What is your mother's maiden name?</option>
+                        <option value="first_pet">What was the name of your first pet?</option>
+                        <option value="birth_city">What city were you born in?</option>
+                        <option value="primary_school">What was the name of your primary school?</option>
+                        <option value="childhood_friend">What was your childhood best friend's name?</option>
+                        <option value="first_car">What was the make of your first car?</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-top:10px;margin-bottom:0">
+                    <label>Your Answer</label>
+                    <input type="text" name="security_answer" placeholder="Enter your answer" required autocomplete="off">
+                </div>
+                <div class="security-hint">⚠ Remember this — required for password recovery</div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submit-btn">Create Account</button>
+        </form>
+
+        <div class="login-link">Already have an account? <a href="/login">Sign in</a></div>
     </div>
 </div>
+
+<script>
+const pwd    = document.getElementById('password');
+const cpwd   = document.getElementById('confirm_password');
+const msg    = document.getElementById('match-msg');
+const btnSub = document.getElementById('submit-btn');
+
+function checkMatch() {
+    if (cpwd.value === '') {
+        msg.textContent = '';
+        btnSub.disabled = false;
+        return;
+    }
+    if (pwd.value === cpwd.value) {
+        msg.textContent = '✓ Passwords match';
+        msg.className = 'match-msg match-ok';
+        btnSub.disabled = false;
+    } else {
+        msg.textContent = '✗ Passwords do not match';
+        msg.className = 'match-msg match-err';
+        btnSub.disabled = true;
+    }
+}
+
+pwd.addEventListener('input', checkMatch);
+cpwd.addEventListener('input', checkMatch);
+
+// Real-time username availability check
+const unameInput = document.getElementById('username');
+const unameFeedback = document.getElementById('username-feedback');
+let unameTimer = null;
+
+unameInput.addEventListener('input', () => {
+    clearTimeout(unameTimer);
+    const val = unameInput.value.trim();
+    if (val.length === 0) {
+        unameFeedback.textContent = '';
+        unameFeedback.style.color = '';
+        btnSub.disabled = false;
+        return;
+    }
+    unameFeedback.textContent = 'Checking...';
+    unameFeedback.style.color = '#9aa0b0';
+
+    unameTimer = setTimeout(() => {
+        const fd = new FormData();
+        fd.append('username', val);
+        fetch('/check-username', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.available) {
+                    unameFeedback.textContent = '✓ Username available';
+                    unameFeedback.style.color = '#38a169';
+                    btnSub.disabled = false;
+                } else {
+                    unameFeedback.textContent = '✗ Username already taken';
+                    unameFeedback.style.color = '#e53e3e';
+                    btnSub.disabled = true;
+                }
+            });
+    }, 500);
+});
+
+// Password strength checker
+const bar  = document.getElementById('strength-bar');
+const stxt = document.getElementById('strength-text');
+
+pwd.addEventListener('input', () => {
+    const v = pwd.value;
+    let score = 0;
+    if (v.length >= 6)  score++;
+    if (v.length >= 10) score++;
+    if (/[A-Z]/.test(v) && /[a-z]/.test(v)) score++;
+    if (/[0-9]/.test(v)) score++;
+    if (/[^A-Za-z0-9]/.test(v)) score++;
+
+    bar.className = 'strength-bar';
+    if (v.length === 0) {
+        bar.className = 'strength-bar'; stxt.textContent = ''; stxt.style.color='';
+    } else if (score <= 1) {
+        bar.classList.add('s-weak');   stxt.textContent = 'Weak';     stxt.style.color='#e53e3e';
+    } else if (score === 2) {
+        bar.classList.add('s-fair');   stxt.textContent = 'Fair';     stxt.style.color='#d69e2e';
+    } else if (score === 3) {
+        bar.classList.add('s-good');   stxt.textContent = 'Good';     stxt.style.color='#3182ce';
+    } else {
+        bar.classList.add('s-strong'); stxt.textContent = 'Strong ✓'; stxt.style.color='#38a169';
+    }
+});
+</script>
 </body>
 </html>

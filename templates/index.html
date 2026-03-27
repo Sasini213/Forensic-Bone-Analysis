@@ -3,225 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bone Analysis - Dashboard</title>
+    <title>Analysis - Forensic Bone Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
-            min-height: 100vh;
-            color: white;
-        }
-        /* Navbar */
-        .navbar {
-            background: rgba(255,255,255,0.05);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .navbar h1 { color: #4fc3f7; font-size: 20px; }
-        .navbar-right { display: flex; gap: 15px; align-items: center; }
-        .navbar-right span { color: #aaa; font-size: 14px; }
-        .nav-btn {
-            padding: 8px 16px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: bold;
-            transition: opacity 0.3s;
-        }
-        .nav-btn-history {
-            background: rgba(79,195,247,0.2);
-            color: #4fc3f7;
-            border: 1px solid #4fc3f7;
-        }
-        .nav-btn-logout {
-            background: rgba(220,53,69,0.2);
-            color: #ff6b6b;
-            border: 1px solid #ff6b6b;
-        }
-        .nav-btn:hover { opacity: 0.8; }
+        body { font-family: 'Inter', sans-serif; background: #d0d4dc; min-height: 100vh; color: #1a1a2e; }
 
-        /* Main */
-        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
-        .page-title { text-align: center; margin-bottom: 30px; }
-        .page-title h2 { font-size: 26px; color: #4fc3f7; }
-        .page-title p { color: #aaa; margin-top: 8px; font-size: 14px; }
-
-        /* Alert */
-        .alert {
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 13px;
+        /* NAVBAR */
+        nav {
+            background: #060d18;
+            padding: 0 40px; height: 58px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.3);
         }
-        .alert-warning { background: rgba(255,193,7,0.2); color: #ffd54f; border: 1px solid rgba(255,193,7,0.3); }
+        .nav-brand { display: flex; align-items: center; gap: 12px; }
+        .nav-icon { width: 34px; height: 34px; background: rgba(255,255,255,0.08); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .nav-title { font-family: 'Playfair Display', serif; font-size: 17px; color: #7bb8d4; letter-spacing: 1px; font-weight: 600; }
+        .nav-right { display: flex; align-items: center; gap: 10px; }
+        .nav-user { font-size: 13px; color: rgba(255,255,255,0.6); margin-right: 6px; }
+        .nav-btn { padding: 7px 18px; font-size: 12px; font-weight: 500; text-decoration: none; border-radius: 50px; transition: all 0.3s; border: 1px solid; font-family: 'Inter', sans-serif; }
+        .btn-outline { border-color: rgba(123,184,212,0.4); color: #7bb8d4; background: transparent; }
+        .btn-outline:hover { background: rgba(123,184,212,0.15); }
+        .btn-danger { border-color: rgba(220,53,69,0.4); color: #ff6b6b; background: transparent; }
+        .btn-danger:hover { background: rgba(220,53,69,0.15); }
 
-        /* Bone Selection */
+        /* MAIN LAYOUT */
+        .main { max-width: 1000px; margin: 0 auto; padding: 36px 24px 60px; }
+
+        .page-header { margin-bottom: 28px; }
+        .page-label { font-size: 11px; letter-spacing: 3px; color: #9aa0b0; text-transform: uppercase; margin-bottom: 6px; }
+        .page-title { font-family: 'Playfair Display', serif; font-size: 32px; color: #1a1a2e; }
+        .page-title em { font-style: italic; color: #7bb8d4; }
+        .page-sub { font-size: 13px; color: #9aa0b0; margin-top: 4px; }
+
+        /* ALERTS */
+        .alert { padding: 10px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; border-left: 3px solid; }
+        .alert-warning { background: #fffbf0; border-color: #d69e2e; color: #975a16; }
+        .alert-danger  { background: #fff0f0; border-color: #e53e3e; color: #c53030; }
+        .alert-success { background: #f0fff4; border-color: #38a169; color: #276749; }
+        .alert-info    { background: #ebf8ff; border-color: #3182ce; color: #2b6cb0; }
+
+        /* CARDS */
         .card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
+            background: white;
+            border-radius: 16px;
+            padding: 28px 32px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
-        .card h3 {
-            color: #4fc3f7;
-            margin-bottom: 15px;
-            font-size: 16px;
-            border-bottom: 1px solid rgba(79,195,247,0.3);
-            padding-bottom: 10px;
+        .card-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 20px; padding-bottom: 14px;
+            border-bottom: 1px solid #f0f0f0;
         }
-        .bone-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 12px;
+        .card-header-left { display: flex; align-items: center; gap: 12px; }
+        .step-badge {
+            width: 32px; height: 32px; background: #060d18;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 700; color: white;
         }
-        .bone-checkbox {
+        .card-title { font-size: 16px; font-weight: 600; color: #1a1a2e; }
+        .card-hint { font-size: 12px; color: #b0b8c8; }
+
+        /* BONE SELECTION */
+        .bone-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+        .bone-cb { display: none; }
+        .bone-lbl {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 10px; padding: 20px 8px;
+            border: 1.5px solid #e8e8e8; border-radius: 12px;
+            cursor: pointer; transition: all 0.3s; background: #fafafa;
+        }
+        .bone-lbl:hover { border-color: #060d18; background: #f5f5f5; }
+        .bone-emoji { font-size: 28px; filter: grayscale(0.3); transition: all 0.3s; }
+        .bone-name { font-size: 11px; font-weight: 600; letter-spacing: 1px; color: #9aa0b0; text-transform: uppercase; transition: color 0.3s; }
+        .bone-cb:checked + .bone-lbl {
+            border-color: #060d18; background: #f0f4ff;
+            box-shadow: 0 0 0 3px rgba(6,13,24,0.08);
+        }
+        .bone-cb:checked + .bone-lbl .bone-emoji { filter: grayscale(0); }
+        .bone-cb:checked + .bone-lbl .bone-name { color: #060d18; }
+        .bone-cb:checked + .bone-lbl::after { content: '✓'; position: absolute; top: 8px; right: 10px; font-size: 11px; color: #060d18; font-weight: 700; }
+        .bone-lbl { position: relative; }
+
+        /* MEASUREMENT SECTIONS */
+        .measure-section {
             display: none;
+            background: #f8f9fa; border: 1.5px solid #e8e8e8;
+            border-radius: 10px; padding: 20px 24px; margin-bottom: 12px;
+            animation: slideIn 0.3s ease;
         }
-        .bone-label {
-            display: block;
-            padding: 12px 8px;
-            background: rgba(255,255,255,0.05);
-            border: 2px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.3s;
-            color: #ccc;
+        @keyframes slideIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+        .measure-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+        .measure-bone-name { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+        .measure-divider { flex: 1; height: 1px; background: #e8e8e8; }
+        .measure-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+        .mfield label { display: block; font-size: 10px; font-weight: 500; color: #9aa0b0; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 6px; }
+        .mfield input {
+            width: 100%; padding: 10px 12px; background: white;
+            border: 1.5px solid #e0e0e0; border-radius: 8px;
+            color: #1a1a2e; font-size: 14px; font-family: 'Inter', sans-serif;
+            outline: none; transition: border-color 0.3s;
         }
-        .bone-label:hover { border-color: #4fc3f7; color: white; }
-        .bone-checkbox:checked + .bone-label {
-            background: rgba(79,195,247,0.2);
-            border-color: #4fc3f7;
-            color: #4fc3f7;
-            font-weight: bold;
-        }
+        .mfield input:focus { border-color: #060d18; }
+        .mfield input::placeholder { color: #c5c9d4; font-size: 13px; }
 
-        /* Measurement sections */
-        .measurement-section {
-            display: none;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(79,195,247,0.2);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
+        /* SUBMIT */
+        .btn-analyze {
+            width: 100%; padding: 16px;
+            background: #060d18; border: none; border-radius: 50px;
+            color: white; font-size: 15px; font-weight: 600;
+            font-family: 'Inter', sans-serif; cursor: pointer;
+            transition: all 0.3s; letter-spacing: 0.5px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        .measurement-section h4 {
-            color: #4fc3f7;
-            margin-bottom: 15px;
-            font-size: 15px;
-        }
-        .measurement-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-        }
-        .form-group label {
-            display: block;
-            color: #aaa;
-            font-size: 12px;
-            margin-bottom: 5px;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 8px 10px;
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 6px;
-            color: white;
-            font-size: 13px;
-            outline: none;
-        }
-        .form-group input:focus { border-color: #4fc3f7; }
-
-        /* Submit */
-        .submit-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #4fc3f7, #0288d1);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: opacity 0.3s;
-            margin-top: 10px;
-        }
-        .submit-btn:hover { opacity: 0.9; }
-
-        @media (max-width: 600px) {
-            .bone-grid { grid-template-columns: repeat(2, 1fr); }
-            .measurement-grid { grid-template-columns: repeat(2, 1fr); }
-        }
+        .btn-analyze:hover { background: #1a3a5c; box-shadow: 0 8px 25px rgba(6,13,24,0.3); transform: translateY(-1px); }
+        .btn-hint { text-align: center; margin-top: 10px; font-size: 12px; color: #b0b8c8; }
     </style>
 </head>
 <body>
 
-<nav class="navbar">
-    <h1>🦴 Forensic Bone Analysis</h1>
-    <div class="navbar-right">
-        <span>👤 {{ full_name }}</span>
-        <a href="/history" class="nav-btn nav-btn-history">📋 History</a>
-        <a href="/logout" class="nav-btn nav-btn-logout">Logout</a>
+<!-- NAVBAR -->
+<nav>
+    <div class="nav-brand">
+        <div class="nav-icon">🦴</div>
+        <span class="nav-title">Forensic Bone Analysis</span>
+    </div>
+    <div class="nav-right">
+        <span class="nav-user">👤 {{ full_name }}</span>
+        <a href="/profile" class="nav-btn btn-outline">Profile</a>
+        <a href="/history" class="nav-btn btn-outline">History</a>
+        <a href="/logout"  class="nav-btn btn-danger">Logout</a>
     </div>
 </nav>
 
-<div class="container">
-    <div class="page-title">
-        <h2>Bone Measurement Analysis</h2>
-        <p>Select available bones and enter measurements to predict sex and age range</p>
+<!-- MAIN -->
+<div class="main">
+    <div class="page-header">
+        <div class="page-label">Skeletal Analysis Module</div>
+        <div class="page-title">New <em>Analysis</em></div>
+        <div class="page-sub">Select available bones and enter measurements to predict biological sex and age range</div>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
+        {% if messages %}{% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}{% endif %}
     {% endwith %}
 
     <form method="POST" action="/predict">
-        <!-- Bone Selection -->
+
+        <!-- STEP 1 -->
         <div class="card">
-            <h3>Step 1: Select Available Bones</h3>
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="step-badge">1</div>
+                    <div class="card-title">Select Available Bones</div>
+                </div>
+                <div class="card-hint">Select all present bones for best accuracy</div>
+            </div>
             <div class="bone-grid">
                 {% for bone in bone_measurements.keys() %}
                 <div>
-                    <input type="checkbox" class="bone-checkbox"
-                           id="bone_{{ bone }}"
-                           name="bones"
-                           value="{{ bone }}"
-                           onchange="toggleSection('{{ bone }}')">
-                    <label class="bone-label" for="bone_{{ bone }}">
-                        🦴 {{ bone }}
+                    <input type="checkbox" class="bone-cb" id="b_{{ bone }}"
+                           name="bones" value="{{ bone }}" onchange="toggle('{{ bone }}')">
+                    <label class="bone-lbl" for="b_{{ bone }}">
+                        <span class="bone-emoji">🦴</span>
+                        <span class="bone-name">{{ bone }}</span>
                     </label>
                 </div>
                 {% endfor %}
             </div>
         </div>
 
-        <!-- Measurements -->
+        <!-- STEP 2 -->
         <div class="card">
-            <h3>Step 2: Enter Measurements (mm)</h3>
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="step-badge">2</div>
+                    <div class="card-title">Enter Measurements</div>
+                </div>
+                <div class="card-hint">All values in millimetres (mm)</div>
+            </div>
             {% for bone, fields in bone_measurements.items() %}
-            <div class="measurement-section" id="section_{{ bone }}">
-                <h4>{{ bone }} Measurements</h4>
-                <div class="measurement-grid">
-                    {% for field in fields %}
-                    <div class="form-group">
-                        <label>{{ field }}</label>
-                        <input type="number"
-                               name="{{ field }}"
-                               step="0.01"
-                               min="0"
-                               placeholder="0.00">
+            <div class="measure-section" id="sec_{{ bone }}">
+                <div class="measure-head">
+                    <div class="measure-bone-name">{{ bone }}</div>
+                    <div class="measure-divider"></div>
+                </div>
+                <div class="measure-grid">
+                    {% for f in fields %}
+                    <div class="mfield">
+                        <label>{{ f }}</label>
+                        <input type="number" name="{{ f }}" step="0.01" min="0" placeholder="0.00">
                     </div>
                     {% endfor %}
                 </div>
@@ -229,17 +203,18 @@
             {% endfor %}
         </div>
 
-        <button type="submit" class="submit-btn">🔬 Predict Sex & Age Range</button>
+        <button type="submit" class="btn-analyze">
+            🔬 Initiate Analysis
+        </button>
+        <div class="btn-hint">Powered by Random Forest + XGBoost ML Models</div>
     </form>
 </div>
 
 <script>
-    function toggleSection(bone) {
-        const section = document.getElementById('section_' + bone);
-        const checkbox = document.getElementById('bone_' + bone);
-        section.style.display = checkbox.checked ? 'block' : 'none';
-    }
+function toggle(bone) {
+    const s = document.getElementById('sec_' + bone);
+    s.style.display = document.getElementById('b_' + bone).checked ? 'block' : 'none';
+}
 </script>
-
 </body>
 </html>

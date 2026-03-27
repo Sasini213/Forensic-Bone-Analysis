@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile — Forensic Bone Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#d0d4dc; min-height:100vh; color:#1a1a2e; }
+        nav { background:#060d18; padding:0 40px; height:58px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 20px rgba(0,0,0,0.3); }
+        .nav-brand { display:flex; align-items:center; gap:12px; }
+        .nav-icon { width:30px; height:30px; border:1px solid rgba(100,180,255,0.3); display:flex; align-items:center; justify-content:center; font-size:13px; border-radius:6px; }
+        .nav-title { font-family:'Playfair Display',serif; font-size:16px; color:#7bb8d4; letter-spacing:1px; }
+        .nav-right { display:flex; align-items:center; gap:8px; }
+        .nav-btn { padding:7px 16px; font-size:12px; font-weight:500; text-decoration:none; border-radius:6px; transition:all 0.3s; border:1px solid; }
+        .btn-primary { background:rgba(123,184,212,0.15); color:#7bb8d4; border-color:rgba(123,184,212,0.3); }
+        .btn-primary:hover { background:rgba(123,184,212,0.25); }
+        .btn-danger { background:rgba(220,53,69,0.15); color:#ff6b6b; border-color:rgba(220,53,69,0.3); }
+        .btn-danger:hover { background:rgba(220,53,69,0.25); }
+
+        .main { max-width:700px; margin:0 auto; padding:36px 24px 60px; }
+        .page-label { font-size:11px; letter-spacing:3px; color:#9aa0b0; text-transform:uppercase; margin-bottom:6px; }
+        .page-title { font-family:'Playfair Display',serif; font-size:32px; color:#1a1a2e; margin-bottom:28px; }
+        .page-title em { font-style:italic; color:#7bb8d4; }
+
+        .alert { padding:10px 16px; border-radius:8px; margin-bottom:20px; font-size:13px; border-left:3px solid; }
+        .alert-success { background:#f0fff4; border-color:#38a169; color:#276749; }
+        .alert-danger  { background:#fff0f0; border-color:#e53e3e; color:#c53030; }
+
+        /* Profile card */
+        .profile-card { background:white; border-radius:16px; padding:32px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+        .card-title { font-size:13px; font-weight:600; color:#1a1a2e; letter-spacing:0.5px; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid #f0f0f0; display:flex; align-items:center; gap:8px; }
+        .card-title span { font-size:16px; }
+
+        /* Info rows */
+        .info-row { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #f8f8f8; }
+        .info-row:last-child { border-bottom:none; }
+        .info-label { font-size:12px; color:#9aa0b0; text-transform:uppercase; letter-spacing:0.8px; }
+        .info-value { font-size:14px; color:#1a1a2e; font-weight:500; }
+
+        /* Form */
+        .form-group { margin-bottom:18px; }
+        .form-group label { display:block; font-size:11px; font-weight:500; color:#6b7280; letter-spacing:0.8px; text-transform:uppercase; margin-bottom:8px; }
+        .form-group input {
+            width:100%; padding:12px 14px; background:#f8f9fa;
+            border:1.5px solid #e0e0e0; border-radius:8px;
+            color:#1a1a2e; font-size:14px; font-family:'Inter',sans-serif;
+            outline:none; transition:all 0.3s;
+        }
+        .form-group input:focus { border-color:#060d18; background:white; }
+        .form-group input::placeholder { color:#b0b8c8; }
+
+        .match-msg { font-size:11px; margin-top:4px; display:block; }
+        .match-ok  { color:#38a169; }
+        .match-err { color:#e53e3e; }
+
+        .strength-wrap { margin-top:5px; }
+        .strength-bar-bg { height:3px; background:#f0f0f0; border-radius:2px; overflow:hidden; }
+        .strength-bar { height:100%; width:0%; border-radius:2px; transition:all 0.35s; }
+        .strength-text { font-size:10px; margin-top:3px; display:block; }
+        .s-weak   { width:25%;  background:#e53e3e; }
+        .s-fair   { width:50%;  background:#d69e2e; }
+        .s-good   { width:75%;  background:#3182ce; }
+        .s-strong { width:100%; background:#38a169; }
+
+        .btn-submit { width:100%; padding:13px; background:#060d18; border:none; border-radius:50px; color:white; font-size:14px; font-weight:600; font-family:'Inter',sans-serif; cursor:pointer; transition:all 0.3s; margin-top:4px; }
+        .btn-submit:hover { background:#1a3a5c; box-shadow:0 8px 25px rgba(6,13,24,0.25); transform:translateY(-1px); }
+        .btn-submit:disabled { background:#9aa0b0; cursor:not-allowed; transform:none; box-shadow:none; }
+    </style>
+</head>
+<body>
+<nav>
+    <div class="nav-brand">
+        <div class="nav-icon">🦴</div>
+        <span class="nav-title">Forensic Bone Analysis</span>
+    </div>
+    <div class="nav-right">
+        <a href="/index"   class="nav-btn btn-primary">New Analysis</a>
+        <a href="/history" class="nav-btn btn-primary">History</a>
+        <a href="/logout"  class="nav-btn btn-danger">Logout</a>
+    </div>
+</nav>
+
+<div class="main">
+    <div class="page-label">Account Settings</div>
+    <div class="page-title">My <em>Profile</em></div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}{% endif %}
+    {% endwith %}
+
+    <!-- Account Info -->
+    <div class="profile-card">
+        <div class="card-title"><span>👤</span> Account Information</div>
+        <div class="info-row">
+            <span class="info-label">Full Name</span>
+            <span class="info-value">{{ full_name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Username</span>
+            <span class="info-value">{{ username }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Member Since</span>
+            <span class="info-value">{{ created_at[:10] if created_at else '—' }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Total Cases</span>
+            <span class="info-value">{{ total_cases }}</span>
+        </div>
+    </div>
+
+    <!-- Change Password -->
+    <div class="profile-card">
+        <div class="card-title"><span>🔐</span> Change Password</div>
+        <form method="POST" action="/profile/change-password" autocomplete="off">
+            <div class="form-group">
+                <label>Current Password</label>
+                <input type="password" name="current_password" placeholder="Enter current password" required autocomplete="new-password">
+            </div>
+            <div class="form-group">
+                <label>New Password</label>
+                <input type="password" name="new_password" id="new_password" placeholder="Enter new password" required autocomplete="new-password">
+                <div class="strength-wrap">
+                    <div class="strength-bar-bg"><div class="strength-bar" id="strength-bar"></div></div>
+                    <span class="strength-text" id="strength-text"></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Confirm New Password</label>
+                <input type="password" name="confirm_password" id="confirm_password" placeholder="Re-enter new password" required autocomplete="new-password">
+                <span class="match-msg" id="match-msg"></span>
+            </div>
+            <button type="submit" class="btn-submit" id="submit-btn">Update Password</button>
+        </form>
+    </div>
+</div>
+
+<script>
+const newPwd  = document.getElementById('new_password');
+const confPwd = document.getElementById('confirm_password');
+const matchMsg = document.getElementById('match-msg');
+const bar     = document.getElementById('strength-bar');
+const stxt    = document.getElementById('strength-text');
+const btnSub  = document.getElementById('submit-btn');
+
+newPwd.addEventListener('input', () => {
+    const v = newPwd.value;
+    let score = 0;
+    if (v.length >= 6)  score++;
+    if (v.length >= 10) score++;
+    if (/[A-Z]/.test(v) && /[a-z]/.test(v)) score++;
+    if (/[0-9]/.test(v)) score++;
+    if (/[^A-Za-z0-9]/.test(v)) score++;
+    bar.className = 'strength-bar';
+    if (v.length === 0) { stxt.textContent = ''; return; }
+    if (score <= 1) { bar.classList.add('s-weak');   stxt.textContent='Weak';     stxt.style.color='#e53e3e'; }
+    else if (score===2) { bar.classList.add('s-fair'); stxt.textContent='Fair';   stxt.style.color='#d69e2e'; }
+    else if (score===3) { bar.classList.add('s-good'); stxt.textContent='Good';   stxt.style.color='#3182ce'; }
+    else { bar.classList.add('s-strong'); stxt.textContent='Strong ✓'; stxt.style.color='#38a169'; }
+    checkMatch();
+});
+
+confPwd.addEventListener('input', checkMatch);
+
+function checkMatch() {
+    if (!confPwd.value) { matchMsg.textContent=''; btnSub.disabled=false; return; }
+    if (newPwd.value === confPwd.value) {
+        matchMsg.textContent='✓ Passwords match'; matchMsg.className='match-msg match-ok'; btnSub.disabled=false;
+    } else {
+        matchMsg.textContent='✗ Passwords do not match'; matchMsg.className='match-msg match-err'; btnSub.disabled=true;
+    }
+}
+</script>
+</body>
+</html>
