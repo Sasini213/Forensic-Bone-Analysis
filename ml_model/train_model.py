@@ -16,15 +16,13 @@ df = pd.read_csv(r'D:\Project\Bone_Gender_Age_Project\dataset\cleaned_data_augme
 
 print("Dataset shape:", df.shape)
 
-# Feature columns
+# Feature columns identify කරන්න
 exclude_cols = ['Sex', 'Age', 'Age_Group']
 feature_cols = [col for col in df.columns if col not in exclude_cols]
 
 X = df[feature_cols]
 
-# =====================
-# Gender Model
-# =====================
+# Gender Model - Random Forest Classifier
 y_gender = df['Sex']
 
 X_train, X_test, y_train, y_test = train_test_split(
@@ -39,9 +37,7 @@ print("Accuracy:", round(accuracy_score(y_test, y_pred_gender), 2))
 print(classification_report(y_test, y_pred_gender,
       target_names=['Male', 'Female'], zero_division=0))
 
-# =====================
-# Age Group Model
-# =====================
+# Age Group Model - XGBoost Classifier
 le = LabelEncoder()
 y_age = le.fit_transform(df['Age_Group'])
 X_train, X_test, y_train, y_test = train_test_split(X, y_age, test_size=0.2, random_state=42, stratify=y_age)
@@ -77,20 +73,22 @@ print("Accuracy:", round(accuracy_score(y_test, y_pred_age), 2))
 print(classification_report(y_test, y_pred_age,
       target_names=le.classes_, zero_division=0))
 
-# =====================
-# Models Save කරන්න
-# =====================
+# Models Save කරන්න - pickle files ලෙස save කරන්න
 save_dir = os.path.dirname(os.path.abspath(__file__))
 
+# Gender prediction model 
 with open(os.path.join(save_dir, 'gender_model.pkl'), 'wb') as f:
     pickle.dump(gender_model, f)
 
+# Age group prediction model
 with open(os.path.join(save_dir, 'age_model.pkl'), 'wb') as f:
     pickle.dump(age_model, f)
 
+# Age label encoder — numbers → age group strings convert කරන්න
 with open(os.path.join(save_dir, 'age_label_encoder.pkl'), 'wb') as f:
     pickle.dump(le, f)
 
+# Scaler — new input data normalize කරන්න
 with open(os.path.join(save_dir, 'scaler.pkl'), 'wb') as f:
     pickle.dump(scaler, f)
 

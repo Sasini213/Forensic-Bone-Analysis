@@ -79,7 +79,7 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# ── Auth Routes ──────────────────────────────────────────────
+# Auth Routes
 
 @app.route('/')
 def home():
@@ -161,7 +161,7 @@ def check_username():
     conn.close()
     return jsonify({'available': exists is None})
 
-# ── Main Routes ──────────────────────────────────────────────
+# Main Routes 
 
 @app.route('/index')
 @login_required
