@@ -1,5 +1,5 @@
 import os
-import pickle
+import joblib
 import numpy as np
 import pandas as pd
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
@@ -18,19 +18,18 @@ def check_session_timeout():
     if 'user_id' in session:
         session.permanent = True
 
-# Models load
+# Models load — joblib use කරනවා (compressed pkl files support)
 MODEL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ml_model')
 
-with open(os.path.join(MODEL_DIR, 'age_label_encoder.pkl'), 'rb') as f:
-    label_encoder = pickle.load(f)
+label_encoder = joblib.load(os.path.join(MODEL_DIR, 'age_label_encoder.pkl'))
 
 BONE_MODELS = {}
 for bone_key in ['humerus', 'radius', 'femur', 'tibia', 'os_coxae']:
     BONE_MODELS[bone_key] = {
-        'gender':   pickle.load(open(os.path.join(MODEL_DIR, f'gender_{bone_key}.pkl'), 'rb')),
-        'age':      pickle.load(open(os.path.join(MODEL_DIR, f'age_{bone_key}.pkl'), 'rb')),
-        'scaler':   pickle.load(open(os.path.join(MODEL_DIR, f'scaler_{bone_key}.pkl'), 'rb')),
-        'features': pickle.load(open(os.path.join(MODEL_DIR, f'features_{bone_key}.pkl'), 'rb')),
+        'gender':   joblib.load(os.path.join(MODEL_DIR, f'gender_{bone_key}.pkl')),
+        'age':      joblib.load(os.path.join(MODEL_DIR, f'age_{bone_key}.pkl')),
+        'scaler':   joblib.load(os.path.join(MODEL_DIR, f'scaler_{bone_key}.pkl')),
+        'features': joblib.load(os.path.join(MODEL_DIR, f'features_{bone_key}.pkl')),
     }
 
 init_db()
@@ -150,18 +149,19 @@ def forgot_password():
 
 @app.route('/check-username', methods=['POST'])
 def check_username():
-    import sqlite3 as sq
+    from ml_model.database import get_conn
     username = request.form.get('username', '').strip()
     if not username:
         return jsonify({'available': True})
-    conn = sq.connect(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database', 'forensic.db'))
+    conn = get_conn()
     cursor = conn.cursor()
-    cursor.execute('SELECT id FROM users WHERE username=?', (username,))
+    cursor.execute('SELECT id FROM users WHERE username=%s', (username,))
     exists = cursor.fetchone()
+    cursor.close()
     conn.close()
     return jsonify({'available': exists is None})
 
-# Main Routes 
+# Main Routes
 
 @app.route('/index')
 @login_required
@@ -243,9 +243,12 @@ def delete_pred(prediction_id):
 def profile():
     info  = get_user_info(session['user_id'])
     total = len(get_user_predictions(session['user_id']))
+    created_at = info[2]
+    if hasattr(created_at, 'strftime'):
+        created_at = created_at.strftime('%Y-%m-%d')
     return render_template('profile.html',
         username=info[0], full_name=info[1],
-        created_at=info[2], total_cases=total)
+        created_at=created_at, total_cases=total)
 
 @app.route('/profile/change-password', methods=['POST'])
 @login_required
