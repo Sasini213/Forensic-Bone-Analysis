@@ -8,7 +8,8 @@ from datetime import datetime
 # PostgreSQL connection — Supabase
 # YOUR_PASSWORD_HERE තැන ඔයාගේ Supabase password එක දාන්න
 # =====================================================================
-DATABASE_URL = DATABASE_URL = DATABASE_URL = "postgresql://postgres:Forensic38211121@db.qafjejywurxfryirtmom.supabase.co:5432/postgres"
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
 def get_conn():
     return psycopg2.connect(DATABASE_URL)
 
