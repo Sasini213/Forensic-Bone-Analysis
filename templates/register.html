@@ -10,7 +10,7 @@
         body { font-family: 'Inter', sans-serif; background: #d0d4dc; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .card { display: flex; width: 920px; min-height: 580px; border-radius: 20px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.3); }
 
-        /* LEFT — same as login */
+        /* LEFT */
         .left { width: 45%; background: #060d18; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .grid-overlay { position: absolute; inset: 0; background-image: linear-gradient(rgba(100,180,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(100,180,255,0.04) 1px, transparent 1px); background-size: 32px 32px; }
         .scan { position: absolute; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, rgba(120,210,255,0.5), transparent); animation: scan 5s linear infinite; box-shadow: 0 0 14px rgba(120,210,255,0.3); }
@@ -52,11 +52,10 @@
         .match-ok  { color: #38a169; }
         .match-err { color: #e53e3e; }
 
-        /* password strength */
-        .strength-wrap { margin-top:5px; }
-       .strength-bar-bg { height:4px; background:#e8e8e8; border-radius:2px; overflow:hidden; margin-top:6px; }
-.strength-bar { height:4px; width:0%; border-radius:2px; transition:all 0.35s; }
-        .strength-text { font-size:10px; margin-top:3px; display:block; }
+        /* password strength — FIXED */
+        .strength-bar-bg { height:4px; background:#e8e8e8; border-radius:2px; overflow:hidden; margin-top:6px; }
+        .strength-bar { height:4px; width:0%; border-radius:2px; transition:all 0.35s; display:block; }
+        .strength-text { font-size:10px; margin-top:3px; display:block; min-height:14px; }
         .s-weak   { width:25%;  background:#e53e3e; }
         .s-fair   { width:50%;  background:#d69e2e; }
         .s-good   { width:75%;  background:#3182ce; }
@@ -95,7 +94,6 @@
             <div class="status-text">New Analyst</div>
         </div>
 
-        <!-- FULL HUMAN SKELETON SVG -->
         <svg viewBox="0 0 200 480" width="180" height="432"
              style="position:relative;z-index:2;opacity:0.75;margin-top:20px"
              fill="none" stroke="#7bb8d4" stroke-linecap="round" stroke-linejoin="round">
@@ -218,9 +216,8 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>Full Name</label>
-                    <input type="text" name="full_name" placeholder="Your full name(eg:John Smith)" required autocomplete="off">
+                    <input type="text" name="full_name" placeholder="Your full name (eg: John Smith)" required autocomplete="off">
                 </div>
-            
                 <div class="form-group">
                     <label>Username</label>
                     <input type="text" name="username" id="username" placeholder="Choose a username" required autocomplete="off">
@@ -234,10 +231,8 @@
                     <label>Password</label>
                     <input type="password" name="password" id="password"
                            placeholder="Create a strong password" required autocomplete="new-password">
-                    
-                        <div class="strength-bar-bg"><div class="strength-bar" id="strength-bar"></div></div>
-                        <span class="strength-text" id="strength-text"></span>
-                    
+                    <div class="strength-bar-bg"><div class="strength-bar" id="strength-bar"></div></div>
+                    <span class="strength-text" id="strength-text"></span>
                 </div>
                 <div class="form-group">
                     <label>Confirm Password</label>
@@ -354,15 +349,25 @@ pwd.addEventListener('input', () => {
 
     bar.className = 'strength-bar';
     if (v.length === 0) {
-        bar.className = 'strength-bar'; stxt.textContent = ''; stxt.style.color='';
+        bar.className = 'strength-bar';
+        stxt.textContent = '';
+        stxt.style.color = '';
     } else if (score <= 1) {
-        bar.classList.add('s-weak');   stxt.textContent = 'Weak';     stxt.style.color='#e53e3e';
+        bar.classList.add('s-weak');
+        stxt.textContent = 'Weak';
+        stxt.style.color = '#e53e3e';
     } else if (score === 2) {
-        bar.classList.add('s-fair');   stxt.textContent = 'Fair';     stxt.style.color='#d69e2e';
+        bar.classList.add('s-fair');
+        stxt.textContent = 'Fair';
+        stxt.style.color = '#d69e2e';
     } else if (score === 3) {
-        bar.classList.add('s-good');   stxt.textContent = 'Good';     stxt.style.color='#3182ce';
+        bar.classList.add('s-good');
+        stxt.textContent = 'Good';
+        stxt.style.color = '#3182ce';
     } else {
-        bar.classList.add('s-strong'); stxt.textContent = 'Strong ✓'; stxt.style.color='#38a169';
+        bar.classList.add('s-strong');
+        stxt.textContent = 'Strong ✓';
+        stxt.style.color = '#38a169';
     }
 });
 </script>
