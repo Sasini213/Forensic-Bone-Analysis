@@ -54,8 +54,8 @@
 
         /* password strength */
         .strength-wrap { margin-top:5px; }
-        .strength-bar-bg { height:3px; background:#f0f0f0; border-radius:2px; overflow:hidden; }
-        .strength-bar { height:100%; width:0%; border-radius:2px; transition:all 0.35s; }
+       .strength-bar-bg { height:4px; background:#e8e8e8; border-radius:2px; overflow:hidden; margin-top:6px; }
+.strength-bar { height:4px; width:0%; border-radius:2px; transition:all 0.35s; }
         .strength-text { font-size:10px; margin-top:3px; display:block; }
         .s-weak   { width:25%;  background:#e53e3e; }
         .s-fair   { width:50%;  background:#d69e2e; }
@@ -235,7 +235,7 @@
                     <input type="password" name="password" id="password"
                            placeholder="Create a strong password" required autocomplete="new-password">
                     
-                        <div class="strength-bar"><div class="strength-bar" id="strength-bar"></div></div>
+                        <div class="strength-bar-bg"><div class="strength-bar" id="strength-bar"></div></div>
                         <span class="strength-text" id="strength-text"></span>
                     
                 </div>
