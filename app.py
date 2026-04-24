@@ -216,11 +216,12 @@ def predict():
         age_label, age_conf, selected_bones, measurements
     )
     return render_template('result.html',
-        gender=gender_label, gender_conf=gender_conf,
-        age=age_label, age_conf=age_conf,
-        case_ref=case_ref, selected_bones=selected_bones,
-        full_name=session.get('full_name')
-    )
+    gender=gender_label, gender_conf=gender_conf,
+    age=age_label, age_conf=age_conf,
+    case_ref=case_ref, selected_bones=selected_bones,
+    full_name=session.get('full_name'),
+    measurements=measurements  # ← මේක add කරන්න
+)
 
 @app.route('/history')
 @login_required
