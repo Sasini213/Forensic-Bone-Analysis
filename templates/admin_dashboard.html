@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — Forensic Bone Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0a0f1a; min-height: 100vh; color: #e2e8f0; }
+
+        /* ── Navbar ── */
+        .navbar { background: #0d1626; border-bottom: 1px solid rgba(255,255,255,0.07); padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+        .nav-brand { display: flex; align-items: center; gap: 12px; }
+        .nav-brand-icon { font-size: 20px; }
+        .nav-brand-text { font-family: 'Playfair Display', serif; font-size: 17px; color: #fff; }
+        .nav-badge { background: #7c3aed; color: white; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-left: 4px; }
+        .nav-right { display: flex; align-items: center; gap: 14px; font-size: 13px; }
+        .nav-admin { color: rgba(255,255,255,0.5); }
+        .nav-admin span { color: #a78bfa; font-weight: 600; }
+        .btn-logout { padding: 7px 16px; border-radius: 50px; font-size: 12px; font-weight: 600; background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); text-decoration: none; transition: all 0.2s; }
+        .btn-logout:hover { background: rgba(239,68,68,0.22); }
+
+        /* ── Layout ── */
+        .main { max-width: 1100px; margin: 0 auto; padding: 36px 24px; }
+
+        .page-header { margin-bottom: 32px; }
+        .page-title { font-family: 'Playfair Display', serif; font-size: 28px; color: #fff; margin-bottom: 6px; }
+        .page-sub   { font-size: 13px; color: rgba(255,255,255,0.4); }
+
+        /* ── Stats row ── */
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+        .stat-card { background: #0d1626; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px 24px; }
+        .stat-label { font-size: 11px; color: rgba(255,255,255,0.4); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+        .stat-value { font-size: 32px; font-weight: 700; }
+        .stat-value.pending  { color: #fbbf24; }
+        .stat-value.approved { color: #34d399; }
+        .stat-value.rejected { color: #f87171; }
+
+        /* ── Section ── */
+        .section-title { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.5); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+        .section-title::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.07); }
+
+        /* ── Request cards (pending) ── */
+        .pending-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 40px; }
+
+        .request-card { background: #0d1626; border: 1px solid rgba(251,191,36,0.2); border-radius: 14px; padding: 20px 24px; }
+        .request-card:hover { border-color: rgba(251,191,36,0.4); }
+        .request-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+        .request-meta { flex: 1; }
+        .request-case { font-family: 'Playfair Display', serif; font-size: 16px; color: #a78bfa; letter-spacing: 1px; margin-bottom: 6px; }
+        .request-user { font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+        .request-user span { color: #fff; font-weight: 500; }
+        .request-time { font-size: 11px; color: rgba(255,255,255,0.35); }
+
+        /* Approve form inside card */
+        .approve-form { margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+        .form-group { flex: 1; min-width: 220px; }
+        .form-label { font-size: 11px; color: rgba(255,255,255,0.4); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; display: block; }
+        .form-input { width: 100%; padding: 9px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #e2e8f0; font-size: 13px; outline: none; transition: border-color 0.2s; }
+        .form-input:focus { border-color: #7c3aed; }
+        .form-input::placeholder { color: rgba(255,255,255,0.2); }
+
+        .btn-approve { padding: 9px 20px; background: #059669; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+        .btn-approve:hover { background: #047857; box-shadow: 0 4px 14px rgba(5,150,105,0.35); }
+        .btn-reject  { padding: 9px 16px; background: rgba(239,68,68,0.12); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+        .btn-reject:hover { background: rgba(239,68,68,0.22); }
+
+        /* ── Reviewed table ── */
+        .table-wrap { background: #0d1626; border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; overflow: hidden; margin-bottom: 32px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        thead th { background: rgba(255,255,255,0.04); padding: 12px 18px; text-align: left; font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.4); letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.07); }
+        tbody td { padding: 13px 18px; border-bottom: 1px solid rgba(255,255,255,0.04); color: rgba(255,255,255,0.75); vertical-align: middle; }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .pill { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .pill-approved { background: rgba(52,211,153,0.12); color: #34d399; border: 1px solid rgba(52,211,153,0.25); }
+        .pill-rejected { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.25); }
+
+        .drive-link-cell a { color: #60a5fa; text-decoration: none; font-size: 12px; }
+        .drive-link-cell a:hover { text-decoration: underline; }
+        .no-link { color: rgba(255,255,255,0.2); font-size: 12px; }
+
+        /* ── Empty state ── */
+        .empty-state { text-align: center; padding: 48px 24px; color: rgba(255,255,255,0.3); }
+        .empty-icon  { font-size: 36px; margin-bottom: 12px; }
+        .empty-text  { font-size: 14px; }
+
+        /* ── Toast ── */
+        .toast { position: fixed; bottom: 28px; right: 28px; padding: 13px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; color: white; z-index: 9999; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; }
+        .toast.show    { opacity: 1; transform: translateY(0); }
+        .toast.success { background: #059669; }
+        .toast.error   { background: #dc2626; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-brand">
+        <span class="nav-brand-icon">🦴</span>
+        <span class="nav-brand-text">Forensic Admin</span>
+        {% if pending_count > 0 %}
+        <span class="nav-badge">{{ pending_count }} pending</span>
+        {% endif %}
+    </div>
+    <div class="nav-right">
+        <span class="nav-admin">Logged in as <span>{{ admin_username }}</span></span>
+        <a href="/admin/logout" class="btn-logout">Logout</a>
+    </div>
+</nav>
+
+<div class="main">
+    <div class="page-header">
+        <div class="page-title">Access Request Management</div>
+        <div class="page-sub">Review and respond to user requests for bone measurement data access.</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-label">Pending</div>
+            <div class="stat-value pending">{{ pending | length }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Approved (recent)</div>
+            <div class="stat-value approved">{{ reviewed | selectattr('4', 'equalto', 'approved') | list | length }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Rejected (recent)</div>
+            <div class="stat-value rejected">{{ reviewed | selectattr('4', 'equalto', 'rejected') | list | length }}</div>
+        </div>
+    </div>
+
+    <!-- Pending Requests -->
+    <div class="section-title">Pending Requests</div>
+
+    {% if pending %}
+    <div class="pending-list">
+        {% for req in pending %}
+        <!-- req: (id, username, full_name, case_ref, requested_at) -->
+        <div class="request-card" id="card-{{ req[0] }}">
+            <div class="request-top">
+                <div class="request-meta">
+                    <div class="request-case">📁 {{ req[3] }}</div>
+                    <div class="request-user">Requested by <span>{{ req[2] }}</span> (@{{ req[1] }})</div>
+                    <div class="request-time">{{ req[4].strftime('%d %b %Y, %I:%M %p') if req[4] else '' }}</div>
+                </div>
+            </div>
+
+            <div class="approve-form">
+                <div class="form-group">
+                    <label class="form-label">Google Drive Link *</label>
+                    <input type="url" class="form-input" id="link-{{ req[0] }}" placeholder="https://drive.google.com/…">
+                </div>
+                <div class="form-group" style="min-width:160px;max-width:220px;">
+                    <label class="form-label">Admin Note (optional)</label>
+                    <input type="text" class="form-input" id="note-{{ req[0] }}" placeholder="e.g. Case file shared">
+                </div>
+                <button class="btn-approve" onclick="approveRequest({{ req[0] }})">✔ Approve</button>
+                <button class="btn-reject"  onclick="rejectRequest({{ req[0] }})">✕ Reject</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty-state" style="margin-bottom:40px;">
+        <div class="empty-icon">✅</div>
+        <div class="empty-text">No pending requests right now.</div>
+    </div>
+    {% endif %}
+
+    <!-- Reviewed History -->
+    <div class="section-title">Recently Reviewed</div>
+
+    {% if reviewed %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Case Ref</th>
+                    <th>User</th>
+                    <th>Status</th>
+                    <th>Drive Link</th>
+                    <th>Admin Note</th>
+                    <th>Reviewed At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in reviewed %}
+                <!-- req: (id, username, full_name, case_ref, status, drive_link, admin_note, reviewed_at, reviewed_by) -->
+                <tr>
+                    <td style="font-family:'Playfair Display',serif;color:#a78bfa;">{{ req[3] }}</td>
+                    <td>{{ req[2] }} <span style="color:rgba(255,255,255,0.35);font-size:11px;">@{{ req[1] }}</span></td>
+                    <td>
+                        {% if req[4] == 'approved' %}
+                            <span class="pill pill-approved">✔ Approved</span>
+                        {% else %}
+                            <span class="pill pill-rejected">✕ Rejected</span>
+                        {% endif %}
+                    </td>
+                    <td class="drive-link-cell">
+                        {% if req[5] %}
+                            <a href="{{ req[5] }}" target="_blank" rel="noopener">Open Drive ↗</a>
+                        {% else %}
+                            <span class="no-link">—</span>
+                        {% endif %}
+                    </td>
+                    <td style="color:rgba(255,255,255,0.5);font-size:12px;">{{ req[6] or '—' }}</td>
+                    <td style="font-size:12px;color:rgba(255,255,255,0.35);">
+                        {{ req[7].strftime('%d %b %Y') if req[7] else '—' }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <div class="empty-text">No reviewed requests yet.</div>
+    </div>
+    {% endif %}
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    function showToast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = `toast ${type} show`;
+        setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    async function approveRequest(id) {
+        const link = document.getElementById(`link-${id}`).value.trim();
+        const note = document.getElementById(`note-${id}`).value.trim();
+
+        if (!link) { showToast('Please paste a Google Drive link first.', 'error'); return; }
+
+        const form = new FormData();
+        form.append('drive_link', link);
+        form.append('admin_note', note);
+
+        const res  = await fetch(`/admin/approve/${id}`, { method: 'POST', body: form });
+        const data = await res.json();
+
+        if (data.success) {
+            showToast('✅ Request approved and Drive link sent!', 'success');
+            const card = document.getElementById(`card-${id}`);
+            card.style.opacity = '0.4';
+            card.style.pointerEvents = 'none';
+            setTimeout(() => card.remove(), 800);
+        } else {
+            showToast(data.message || 'Error approving.', 'error');
+        }
+    }
+
+    async function rejectRequest(id) {
+        const note = document.getElementById(`note-${id}`).value.trim();
+
+        const form = new FormData();
+        form.append('admin_note', note);
+
+        const res  = await fetch(`/admin/reject/${id}`, { method: 'POST', body: form });
+        const data = await res.json();
+
+        if (data.success) {
+            showToast('Request rejected.', 'success');
+            const card = document.getElementById(`card-${id}`);
+            card.style.opacity = '0.4';
+            card.style.pointerEvents = 'none';
+            setTimeout(() => card.remove(), 800);
+        } else {
+            showToast(data.message || 'Error rejecting.', 'error');
+        }
+    }
+</script>
+</body>
+</html>

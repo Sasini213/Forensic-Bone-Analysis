@@ -16,9 +16,9 @@
         .nav-user { font-size: 13px; color: rgba(255,255,255,0.7); }
         .nav-user span { color: #7dd3fc; font-weight: 500; }
         .nav-btn { padding: 8px 18px; border-radius: 50px; font-size: 13px; font-weight: 500; text-decoration: none; transition: all 0.2s; border: 1px solid; }
-        .nav-btn-new { background: rgba(125,211,252,0.1); color: #7dd3fc; border-color: rgba(125,211,252,0.3); }
-        .nav-btn-history { background: rgba(134,239,172,0.1); color: #86efac; border-color: rgba(134,239,172,0.3); }
-        .nav-btn-logout { background: rgba(239,68,68,0.1); color: #fca5a5; border-color: rgba(239,68,68,0.3); }
+        .nav-btn-new      { background: rgba(125,211,252,0.1); color: #7dd3fc; border-color: rgba(125,211,252,0.3); }
+        .nav-btn-history  { background: rgba(134,239,172,0.1); color: #86efac; border-color: rgba(134,239,172,0.3); }
+        .nav-btn-logout   { background: rgba(239,68,68,0.1);   color: #fca5a5; border-color: rgba(239,68,68,0.3); }
 
         .main { max-width: 960px; margin: 0 auto; padding: 36px 24px; }
 
@@ -55,6 +55,37 @@
         .bones-list { display: flex; gap: 10px; flex-wrap: wrap; }
         .bone-tag { padding: 6px 16px; background: #f0f4f8; border: 1px solid #d0dae6; color: #0d2a4a; border-radius: 50px; font-size: 13px; font-weight: 500; }
 
+        /* ── Measurements Access Card ── */
+        .access-card { background: #fff; border-radius: 16px; padding: 28px 32px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); position: relative; overflow: hidden; }
+        .access-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #7c3aed, #a855f7); }
+        .access-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+        .access-info { flex: 1; }
+        .access-title { font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 6px; }
+        .access-desc { font-size: 13px; color: #6b7280; line-height: 1.6; }
+        .access-action { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 200px; }
+
+        .btn-request { padding: 11px 24px; background: #7c3aed; color: white; border: none; border-radius: 50px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.25s; white-space: nowrap; }
+        .btn-request:hover { background: #6d28d9; box-shadow: 0 6px 20px rgba(124,58,237,0.35); transform: translateY(-1px); }
+        .btn-request:disabled { background: #c4b5fd; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .badge-pending { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; background: #fffbeb; border: 1.5px solid #fcd34d; border-radius: 50px; font-size: 13px; font-weight: 600; color: #92400e; }
+        .dot-pending { width: 8px; height: 8px; background: #f59e0b; border-radius: 50%; animation: blink 1.5s infinite; }
+
+        .badge-approved { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 50px; font-size: 13px; font-weight: 600; color: #166534; }
+        .btn-drive { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; background: linear-gradient(135deg, #166534, #15803d); color: white; text-decoration: none; border-radius: 50px; font-size: 14px; font-weight: 600; transition: all 0.25s; white-space: nowrap; }
+        .btn-drive:hover { box-shadow: 0 6px 20px rgba(22,101,52,0.35); transform: translateY(-1px); }
+
+        .badge-rejected { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; background: #fff1f2; border: 1.5px solid #fca5a5; border-radius: 50px; font-size: 13px; font-weight: 600; color: #991b1b; }
+
+        .access-note { font-size: 12px; color: #9aa0b0; margin-top: 10px; }
+
+        /* ── Toast ── */
+        .toast { position: fixed; bottom: 28px; right: 28px; padding: 14px 22px; border-radius: 12px; font-size: 14px; font-weight: 500; color: white; z-index: 9999; opacity: 0; transform: translateY(12px); transition: all 0.3s; pointer-events: none; max-width: 320px; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background: #166534; box-shadow: 0 8px 24px rgba(22,101,52,0.3); }
+        .toast.error   { background: #991b1b; box-shadow: 0 8px 24px rgba(153,27,27,0.3); }
+        .toast.info    { background: #1e40af; box-shadow: 0 8px 24px rgba(30,64,175,0.3); }
+
         .disclaimer { background: #fffbf0; border: 1px solid #fde68a; border-left: 4px solid #f59e0b; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; }
         .disclaimer p { font-size: 13px; color: #92400e; line-height: 1.7; }
 
@@ -67,6 +98,7 @@
     </style>
 </head>
 <body>
+
 <nav class="navbar">
     <div class="nav-brand">
         <span class="nav-brand-icon">🦴</span>
@@ -81,6 +113,7 @@
 </nav>
 
 <div class="main">
+
     <div class="case-banner">
         <div>
             <div class="case-label">Case Reference Number</div>
@@ -122,6 +155,24 @@
         </div>
     </div>
 
+    <!-- Measurements Access Card -->
+    <div class="access-card">
+        <div class="access-header">
+            <div class="access-info">
+                <div class="access-title">📂 Detailed Bone Measurements</div>
+                <div class="access-desc">
+                    Raw skeletal measurements used in this analysis are stored securely.<br>
+                    Request access from the admin to view the full measurement data via Google Drive.
+                </div>
+            </div>
+            <div class="access-action" id="access-action-area">
+                <!-- JS renders this based on /check_access response -->
+                <div class="badge-pending"><span class="dot-pending"></span> Loading…</div>
+            </div>
+        </div>
+        <div class="access-note" id="access-note"></div>
+    </div>
+
     <div class="disclaimer">
         <p>⚠ <strong>Disclaimer:</strong> These results are generated by ML models (Random Forest) and should be used as a decision-support tool only. All results must be verified by a qualified forensic anthropologist before use in any official investigation.</p>
     </div>
@@ -132,14 +183,93 @@
     </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
-// Confidence bars animation
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        document.getElementById('sex-bar').style.width = '{{ gender_conf }}%';
-        document.getElementById('age-bar').style.width = '{{ age_conf }}%';
-    }, 300);
-});
+    const CASE_REF      = "{{ case_ref }}";
+    const PREDICTION_ID = "{{ prediction_id | default('') }}";
+
+    function showToast(msg, type = 'info') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = `toast ${type} show`;
+        setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    function renderAccessState(status, driveLink = '', adminNote = '') {
+        const area = document.getElementById('access-action-area');
+        const note = document.getElementById('access-note');
+
+        if (status === 'none') {
+            area.innerHTML = `<button class="btn-request" id="req-btn" onclick="sendRequest()">🔐 Request Access</button>`;
+            note.textContent = '';
+
+        } else if (status === 'pending') {
+            area.innerHTML = `<div class="badge-pending"><span class="dot-pending"></span> Awaiting Admin Approval</div>`;
+            note.textContent = 'Your request has been submitted. Check back later.';
+
+        } else if (status === 'approved') {
+            area.innerHTML = `
+                <div class="badge-approved">✔ Access Granted</div>
+                <a href="${driveLink}" target="_blank" rel="noopener" class="btn-drive">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6.28 3h11.44l5.78 10-5.78 10H6.28L.5 13 6.28 3z" opacity=".3"/>
+                        <path d="M12 3L6.28 13h11.44z" opacity=".6"/>
+                        <path d="M17.72 13H6.28L.5 23h5.78l5.72-10z"/>
+                    </svg>
+                    View in Google Drive
+                </a>`;
+            note.textContent = adminNote ? `Admin note: ${adminNote}` : '';
+
+        } else if (status === 'rejected') {
+            area.innerHTML = `
+                <div class="badge-rejected">✕ Request Rejected</div>
+                <button class="btn-request" onclick="sendRequest()" style="margin-top:6px;font-size:12px;padding:8px 18px;">Re-submit Request</button>`;
+            note.textContent = adminNote ? `Reason: ${adminNote}` : 'Contact your admin for details.';
+        }
+    }
+
+    async function checkAccess() {
+        try {
+            const res  = await fetch(`/check_access/${encodeURIComponent(CASE_REF)}`);
+            const data = await res.json();
+            renderAccessState(data.status, data.drive_link, data.admin_note);
+        } catch (e) {
+            renderAccessState('none');
+        }
+    }
+
+    async function sendRequest() {
+        const btn = document.getElementById('req-btn');
+        if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+
+        const form = new FormData();
+        form.append('case_ref', CASE_REF);
+        if (PREDICTION_ID) form.append('prediction_id', PREDICTION_ID);
+
+        try {
+            const res  = await fetch('/request_access', { method: 'POST', body: form });
+            const data = await res.json();
+            if (data.success) {
+                showToast('✅ Request sent to admin!', 'success');
+                renderAccessState('pending');
+            } else {
+                showToast(data.message || 'Something went wrong.', 'error');
+                if (btn) { btn.disabled = false; btn.textContent = '🔐 Request Access'; }
+            }
+        } catch (e) {
+            showToast('Network error. Please try again.', 'error');
+            if (btn) { btn.disabled = false; btn.textContent = '🔐 Request Access'; }
+        }
+    }
+
+    window.addEventListener('load', () => {
+        checkAccess();
+        setTimeout(() => {
+            document.getElementById('sex-bar').style.width = '{{ gender_conf }}%';
+            document.getElementById('age-bar').style.width = '{{ age_conf }}%';
+        }, 300);
+    });
 </script>
 </body>
 </html>
