@@ -115,7 +115,6 @@
     <h1>🦴 Forensic Bone Analysis</h1>
     <div class="navbar-right">
         <span>👤 {{ full_name }}</span>
-        {# FIX: use url_for() instead of hardcoded paths #}
         <a href="{{ url_for('index') }}"   class="nav-btn nav-btn-new">🔬 New Analysis</a>
         <a href="{{ url_for('history') }}" class="nav-btn nav-btn-history">📋 History</a>
         <a href="{{ url_for('logout') }}"  class="nav-btn nav-btn-logout">Logout</a>
@@ -133,24 +132,17 @@
 
         <div class="result-card">
             <h4>Predicted Biological Sex</h4>
-            {# gender|lower maps "Male"->"male" / "Female"->"female" to match CSS classes #}
             <div class="result-value {{ gender | lower }}">
                 {% if gender == 'Male' %}
                     ♂ Male
                 {% elif gender == 'Female' %}
                     ♀ Female
                 {% else %}
-                    {{ gender }}          {# FIX: fallback for unexpected values #}
+                    {{ gender }}
                 {% endif %}
             </div>
             <div class="confidence-bar">
-                {# FIX: cast to float before rounding to prevent rendering errors #}
-               /* was: @media (max-width: 520px) { .results-grid { grid-template-columns: 1fr; } } */
-@media (max-width: 520px) {
-    .results-grid {
-        grid-template-columns: 1fr;
-    }
-}
+                <div class="confidence-fill-gender" data-width="{{ gender_conf | replace('%', '') | float | round | int }}"></div>
             </div>
             <p class="confidence-text">Confidence: {{ gender_conf }}%</p>
         </div>
@@ -159,12 +151,7 @@
             <h4>Estimated Age Range</h4>
             <div class="result-value age">{{ age }} yrs</div>
             <div class="confidence-bar">
-                /* was: @media (max-width: 420px) { .action-buttons { flex-direction: column; } } */
-@media (max-width: 420px) {
-    .action-buttons {
-        flex-direction: column;
-    }
-}
+                <div class="confidence-fill-age" data-width="{{ age_conf | float | round | int }}"></div>
             </div>
             <p class="confidence-text">Confidence: {{ age_conf }}%</p>
         </div>
@@ -174,7 +161,6 @@
     <div class="bones-used">
         <h4>Bones Used for Analysis</h4>
         <div class="bone-tags">
-            {# FIX: guard against empty list #}
             {% if selected_bones %}
                 {% for bone in selected_bones %}
                     <span class="bone-tag">🦴 {{ bone }}</span>
