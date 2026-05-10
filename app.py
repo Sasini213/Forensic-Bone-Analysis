@@ -289,7 +289,7 @@ def api_predictions():
     rows = get_user_predictions(session['user_id'])
     predictions = []
     for r in rows:
-        predictions.append({
+      predictions.append({
     'id':         r[0],
     'case_ref':   r[2],
     'sex':        r[3],
@@ -298,7 +298,7 @@ def api_predictions():
     'age_conf':   r[6],
     'bones':      r[7],
     'created_at': str(r[8]) if r[8] else None,
-    'notes':      r[9] if len(r) > 9 else '',   # ← add කරන්න
+    'notes':      r[9] if len(r) > 9 else '',
 })
     return jsonify({'predictions': predictions})
 
@@ -457,13 +457,36 @@ def generate_forensic_report(output, data):
         section_header('BONE MEASUREMENTS ENTERED')
         col_w  = (W - 2*margin) / 2
         row_ht = 0.55*cm
+
+        # Header row
         c.setFillColor(MID_BLUE)
         c.rect(margin, y - row_ht, W - 2*margin, row_ht, fill=1, stroke=0)
         c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 9)
         c.drawString(margin + 0.3*cm, y - row_ht + 0.15*cm, 'Measurement')
         c.drawString(margin + col_w + 0.3*cm, y - row_ht + 0.15*cm, 'Value (mm)')
         y -= row_ht
+
         for i, (k, v) in enumerate(measurements.items()):
+            # Page break check — footer height + buffer
+            if y - row_ht < 2.8*cm:
+                c.showPage()
+                # New page header strip
+                c.setFillColor(DARK_BLUE)
+                c.rect(0, H - 1.2*cm, W, 1.2*cm, fill=1, stroke=0)
+                c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 8)
+                c.drawString(margin, H - 0.75*cm, 'FORENSIC BONE ANALYSIS SYSTEM')
+                c.setFont('Helvetica', 8)
+                c.drawRightString(W - margin, H - 0.75*cm, f"Case: {data.get('case_ref','')}")
+                y = H - 1.8*cm
+
+                # Re-draw table header on new page
+                c.setFillColor(MID_BLUE)
+                c.rect(margin, y - row_ht, W - 2*margin, row_ht, fill=1, stroke=0)
+                c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 9)
+                c.drawString(margin + 0.3*cm, y - row_ht + 0.15*cm, 'Measurement (continued)')
+                c.drawString(margin + col_w + 0.3*cm, y - row_ht + 0.15*cm, 'Value (mm)')
+                y -= row_ht
+
             val_str = str(v) if v and float(v) > 0 else 'N/A'
             c.setFillColor(LIGHT_GREY if i % 2 == 0 else WHITE)
             c.rect(margin, y - row_ht, W - 2*margin, row_ht, fill=1, stroke=0)
@@ -474,11 +497,22 @@ def generate_forensic_report(output, data):
             c.setFont('Helvetica-Bold', 9)
             c.drawString(margin + col_w + 0.3*cm, y - row_ht + 0.15*cm, val_str)
             y -= row_ht
+
         y -= 0.6*cm
 
     # Analyst notes
     notes = data.get('notes', '')
     if notes:
+        # Page break check for notes
+        if y < 5*cm:
+            c.showPage()
+            c.setFillColor(DARK_BLUE)
+            c.rect(0, H - 1.2*cm, W, 1.2*cm, fill=1, stroke=0)
+            c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 8)
+            c.drawString(margin, H - 0.75*cm, 'FORENSIC BONE ANALYSIS SYSTEM')
+            c.setFont('Helvetica', 8)
+            c.drawRightString(W - margin, H - 0.75*cm, f"Case: {data.get('case_ref','')}")
+            y = H - 1.8*cm
         section_header('ANALYST NOTES')
         notes_h = 1.8*cm
         c.setFillColor(colors.HexColor('#fffdf0'))
