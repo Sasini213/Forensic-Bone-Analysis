@@ -64,6 +64,8 @@
         .td-date  { font-size:11px; color:#b0b8c8; }
         .btn-delete { padding:5px 12px; background:#fff0f0; border:1px solid #fed7d7; border-radius:6px; color:#c53030; font-size:11px; font-weight:500; cursor:pointer; transition:all 0.3s; font-family:'Inter',sans-serif; }
         .btn-delete:hover { background:#c53030; color:white; }
+        .btn-download { padding:5px 12px; background:#fff8f0; border:1px solid #fcd9b0; border-radius:6px; color:#c05621; font-size:11px; font-weight:500; cursor:pointer; transition:all 0.3s; font-family:'Inter',sans-serif; text-decoration:none; display:inline-block; }
+        .btn-download:hover { background:#c05621; color:white; }
         .empty { padding:60px; text-align:center; }
         .empty-icon { font-size:40px; margin-bottom:14px; opacity:0.3; }
         .empty-title { font-family:'Playfair Display',serif; font-size:18px; font-style:italic; color:#9aa0b0; margin-bottom:6px; }
@@ -278,6 +280,10 @@
                 '<td><span class="td-bones" title="' + escHtml(p.bones) + '">' + escHtml(p.bones) + '</span></td>' +
                 '<td><span class="td-date">' + dateStr + '</span></td>' +
                 '<td><button class="btn-delete" onclick="deletePrediction(' + p.id + ', this)">Delete</button></td>' +
+                '<td style="display:flex;gap:6px;align-items:center;">' +
+                '<a href="/download-report/' + p.id + '" class="btn-download" title="Download PDF">⬇ PDF</a>' +
+                '<button class="btn-delete" onclick="deletePrediction(' + p.id + ', this)">Delete</button>' +
+                '</td>'
                 '</tr>';
         }).join('');
 
