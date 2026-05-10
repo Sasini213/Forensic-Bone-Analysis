@@ -160,6 +160,18 @@ def delete_prediction(prediction_id, user_id):
     cursor.close()
     conn.close()
 
+def get_prediction_measurements(prediction_id):
+    conn = get_conn()
+    cursor = conn.cursor()
+    cursor.execute(
+        'SELECT measurement_name, measurement_value FROM bone_measurements WHERE prediction_id=%s ORDER BY id',
+        (prediction_id,)
+    )
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return {row[0]: row[1] for row in rows}    
+
 def get_user_info(user_id):
     conn = get_conn()
     cursor = conn.cursor()

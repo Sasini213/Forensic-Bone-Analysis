@@ -6,7 +6,8 @@ from flask import (Flask, render_template, request, redirect, url_for,
                    session, flash, jsonify, send_file, abort, send_from_directory)
 from ml_model.database import (init_db, save_prediction, register_user, login_user,
                                 get_user_predictions, reset_password, delete_prediction,
-                                get_user_info, change_password, get_conn)
+                                get_user_info, change_password, get_conn,
+                                get_prediction_measurements)
 from datetime import timedelta
 from functools import wraps
 from reportlab.lib.pagesizes import A4
@@ -16,6 +17,7 @@ from reportlab.lib import colors
 from reportlab.lib.units import cm
 import io
 from reportlab.pdfgen import canvas as rl_canvas
+
 
 app = Flask(__name__)
 app.secret_key = 'forensic_bone_secret_key_2024'
@@ -535,10 +537,9 @@ def download_report(prediction_id):
         'sex_conf':     float(pred[4]),
         'age_range':    pred[5],
         'age_conf':     float(pred[6]),
-        'measurements': {},
+        'measurements': get_prediction_measurements(pred[0]),  # ← මේක change වුනා
         'notes':        '',
-    }
-
+}
     buffer = io.BytesIO()
     generate_forensic_report(buffer, data)
     buffer.seek(0)
