@@ -141,7 +141,7 @@ def login():
         success, result = login_user(username, password)
         if success:
             session['user_id']   = result['id']
-            session['username']  = result['username']
+            session['username']  = result.get('username') or result.get('user_name') or result.get('name', '')
             session['full_name'] = result['full_name']
             flash(f"Welcome, {result['full_name']}!", 'success')
             return redirect(url_for('index'))
