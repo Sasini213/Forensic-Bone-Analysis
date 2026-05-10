@@ -451,54 +451,63 @@ def generate_forensic_report(output, data):
 
     y -= card_h + 0.7*cm
 
-    # Measurements
+   # Measurements — 2 column layout
     measurements = data.get('measurements', {})
     if measurements:
         section_header('BONE MEASUREMENTS ENTERED')
-        col_w  = (W - 2*margin) / 2
-        row_ht = 0.55*cm
+        items     = [(k, v) for k, v in measurements.items()]
+        half      = (len(items) + 1) // 2
+        left_col  = items[:half]
+        right_col = items[half:]
 
-        # Header row
-        c.setFillColor(MID_BLUE)
-        c.rect(margin, y - row_ht, W - 2*margin, row_ht, fill=1, stroke=0)
-        c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 9)
-        c.drawString(margin + 0.3*cm, y - row_ht + 0.15*cm, 'Measurement')
-        c.drawString(margin + col_w + 0.3*cm, y - row_ht + 0.15*cm, 'Value (mm)')
-        y -= row_ht
+        col_block_w = (W - 2*margin - 0.6*cm) / 2
+        row_ht      = 0.46*cm
+        hdr_h       = 0.5*cm
 
-        for i, (k, v) in enumerate(measurements.items()):
-            # Page break check — footer height + buffer
-            if y - row_ht < 2.8*cm:
-                c.showPage()
-                # New page header strip
-                c.setFillColor(DARK_BLUE)
-                c.rect(0, H - 1.2*cm, W, 1.2*cm, fill=1, stroke=0)
-                c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 8)
-                c.drawString(margin, H - 0.75*cm, 'FORENSIC BONE ANALYSIS SYSTEM')
-                c.setFont('Helvetica', 8)
-                c.drawRightString(W - margin, H - 0.75*cm, f"Case: {data.get('case_ref','')}")
-                y = H - 1.8*cm
+        def draw_meas_header(x, label):
+            c.setFillColor(MID_BLUE)
+            c.rect(x, y - hdr_h, col_block_w, hdr_h, fill=1, stroke=0)
+            c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 8)
+            c.drawString(x + 0.25*cm, y - hdr_h + 0.12*cm, label)
+            c.drawString(x + col_block_w - 2.2*cm, y - hdr_h + 0.12*cm, 'mm')
 
-                # Re-draw table header on new page
-                c.setFillColor(MID_BLUE)
-                c.rect(margin, y - row_ht, W - 2*margin, row_ht, fill=1, stroke=0)
-                c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 9)
-                c.drawString(margin + 0.3*cm, y - row_ht + 0.15*cm, 'Measurement (continued)')
-                c.drawString(margin + col_w + 0.3*cm, y - row_ht + 0.15*cm, 'Value (mm)')
-                y -= row_ht
+        draw_meas_header(margin, 'Measurement')
+        draw_meas_header(margin + col_block_w + 0.6*cm, 'Measurement')
+        y -= hdr_h
 
-            val_str = str(v) if v and float(v) > 0 else 'N/A'
-            c.setFillColor(LIGHT_GREY if i % 2 == 0 else WHITE)
-            c.rect(margin, y - row_ht, W - 2*margin, row_ht, fill=1, stroke=0)
-            c.setStrokeColor(MED_GREY); c.setLineWidth(0.3)
-            c.line(margin, y - row_ht, W - margin, y - row_ht)
-            c.setFillColor(TEXT_DARK); c.setFont('Helvetica', 9)
-            c.drawString(margin + 0.3*cm, y - row_ht + 0.15*cm, k)
-            c.setFont('Helvetica-Bold', 9)
-            c.drawString(margin + col_w + 0.3*cm, y - row_ht + 0.15*cm, val_str)
+        for i in range(max(len(left_col), len(right_col))):
+            bg = LIGHT_GREY if i % 2 == 0 else WHITE
+
+            # Left column
+            if i < len(left_col):
+                k, v = left_col[i]
+                val_str = f"{float(v):.2f}" if v and float(v) > 0 else 'N/A'
+                c.setFillColor(bg)
+                c.rect(margin, y - row_ht, col_block_w, row_ht, fill=1, stroke=0)
+                c.setStrokeColor(MED_GREY); c.setLineWidth(0.25)
+                c.line(margin, y - row_ht, margin + col_block_w, y - row_ht)
+                c.setFillColor(TEXT_DARK); c.setFont('Helvetica', 8)
+                c.drawString(margin + 0.25*cm, y - row_ht + 0.1*cm, k)
+                c.setFont('Helvetica-Bold', 8)
+                c.drawRightString(margin + col_block_w - 0.25*cm, y - row_ht + 0.1*cm, val_str)
+
+            # Right column
+            if i < len(right_col):
+                k, v = right_col[i]
+                val_str = f"{float(v):.2f}" if v and float(v) > 0 else 'N/A'
+                rx = margin + col_block_w + 0.6*cm
+                c.setFillColor(bg)
+                c.rect(rx, y - row_ht, col_block_w, row_ht, fill=1, stroke=0)
+                c.setStrokeColor(MED_GREY); c.setLineWidth(0.25)
+                c.line(rx, y - row_ht, rx + col_block_w, y - row_ht)
+                c.setFillColor(TEXT_DARK); c.setFont('Helvetica', 8)
+                c.drawString(rx + 0.25*cm, y - row_ht + 0.1*cm, k)
+                c.setFont('Helvetica-Bold', 8)
+                c.drawRightString(rx + col_block_w - 0.25*cm, y - row_ht + 0.1*cm, val_str)
+
             y -= row_ht
 
-        y -= 0.6*cm
+        y -= 0.5*cm
 
     # Analyst notes
     notes = data.get('notes', '')
