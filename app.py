@@ -9,9 +9,7 @@ from ml_model.database import (init_db, save_prediction, register_user, login_us
                                 get_user_info, change_password, get_conn)
 from datetime import timedelta
 from functools import wraps
-import io
-import json
-from pdf_generator import generate_prediction_pdf
+
 
 app = Flask(__name__)
 app.secret_key = 'forensic_bone_secret_key_2024'
@@ -267,65 +265,6 @@ def history():
         predictions=predictions,
         full_name=session.get('full_name'),
     )
-
-
-@app.route('/export_pdf/<int:prediction_id>')
-@login_required                                   # FIX: decorator add කළා
-def export_pdf(prediction_id):
-    # ── DB query — get_conn() use කරනවා (ඔයාගේ existing helper) ──
-    conn   = get_conn()
-    cursor = conn.cursor()
-
-    cursor.execute(
-        """SELECT id, case_reference, bone_type, predicted_sex, sex_confidence,
-                  predicted_age, age_confidence, created_at, measurements
-           FROM predictions
-           WHERE id = %s AND user_id = %s""",
-        (prediction_id, session['user_id']),
-    )
-    row = cursor.fetchone()
-    cursor.close()
-    conn.close()
-
-    if not row:
-        abort(404)
-
-    # ── Row → dict (column names match SELECT order above) ──────────
-    prediction = {
-        'id':             row[0],
-        'case_reference': row[1],
-        'bone_type':      row[2],
-        'predicted_sex':  row[3],
-        'sex_confidence': row[4],
-        'predicted_age':  row[5],
-        'age_confidence': row[6],
-        'timestamp':      row[7],
-        'measurements':   {},
-    }
-
-    # measurements — JSON string or dict
-    raw_measurements = row[8]
-    if isinstance(raw_measurements, str):
-        try:
-            prediction['measurements'] = json.loads(raw_measurements)
-        except (json.JSONDecodeError, TypeError):
-            prediction['measurements'] = {}
-    elif isinstance(raw_measurements, dict):
-        prediction['measurements'] = raw_measurements
-
-    pdf_bytes = generate_prediction_pdf(
-        prediction,
-        generated_by=session.get('username', session.get('full_name', 'Unknown')),
-    )
-
-    filename = f"forensic_report_{prediction['case_reference']}.pdf"
-    return send_file(
-        io.BytesIO(pdf_bytes),
-        mimetype='application/pdf',
-        as_attachment=True,
-        download_name=filename,
-    )
-
 
 @app.route('/delete-prediction/<int:prediction_id>', methods=['POST'])
 @login_required
