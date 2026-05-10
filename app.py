@@ -307,10 +307,8 @@ def delete_pred(prediction_id):
     # JSON return කරනවා — JS fetch() handle කරනවා
     return jsonify({'success': True})
 
-@app.route('/download-report/<int:prediction_id>')
-@login_required
-# ── PDF Report Generator ──────────────────────────────────────────────────────
 
+# ── PDF Report Generator ──────────────────────────────────────────────────────
 def generate_forensic_report(output, data):
     from reportlab.pdfgen import canvas as rl_canvas
     W, H = A4
