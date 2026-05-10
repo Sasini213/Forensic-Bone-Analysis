@@ -7,7 +7,7 @@ from flask import (Flask, render_template, request, redirect, url_for,
 from ml_model.database import (init_db, save_prediction, register_user, login_user,
                                 get_user_predictions, reset_password, delete_prediction,
                                 get_user_info, change_password, get_conn,
-                                get_prediction_measurements)
+                                get_prediction_measurements, update_analyst_notes)
 from datetime import timedelta
 from functools import wraps
 from reportlab.lib.pagesizes import A4
@@ -290,15 +290,16 @@ def api_predictions():
     predictions = []
     for r in rows:
         predictions.append({
-            'id':         r[0],
-            'case_ref':   r[2],
-            'sex':        r[3],
-            'sex_conf':   r[4],
-            'age_range':  r[5],
-            'age_conf':   r[6],
-            'bones':      r[7],
-            'created_at': str(r[8]) if r[8] else None,
-        })
+    'id':         r[0],
+    'case_ref':   r[2],
+    'sex':        r[3],
+    'sex_conf':   r[4],
+    'age_range':  r[5],
+    'age_conf':   r[6],
+    'bones':      r[7],
+    'created_at': str(r[8]) if r[8] else None,
+    'notes':      r[9] if len(r) > 9 else '',   # ← add කරන්න
+})
     return jsonify({'predictions': predictions})
 
 
@@ -309,6 +310,12 @@ def delete_pred(prediction_id):
     # JSON return කරනවා — JS fetch() handle කරනවා
     return jsonify({'success': True})
 
+@app.route('/update-notes/<int:prediction_id>', methods=['POST'])
+@login_required
+def update_notes(prediction_id):
+    notes = request.form.get('notes', '').strip()
+    update_analyst_notes(prediction_id, session['user_id'], notes)
+    return jsonify({'success': True})
 
 # ── PDF Report Generator ──────────────────────────────────────────────────────
 def generate_forensic_report(output, data):
@@ -538,7 +545,7 @@ def download_report(prediction_id):
         'age_range':    pred[5],
         'age_conf':     float(pred[6]),
         'measurements': get_prediction_measurements(pred[0]),  # ← මේක change වුනා
-        'notes':        '',
+        'notes': pred[9] if len(pred) > 9 and pred[9] else '',
 }
     buffer = io.BytesIO()
     generate_forensic_report(buffer, data)

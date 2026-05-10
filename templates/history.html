@@ -75,6 +75,17 @@
         .loading { text-align:center; padding:60px; color:#9aa0b0; font-size:13px; }
         .spinner { display:inline-block; width:24px; height:24px; border:2px solid #e0e0e0; border-top-color:#7bb8d4; border-radius:50%; animation:spin 0.8s linear infinite; margin-bottom:12px; }
         @keyframes spin { to { transform:rotate(360deg); } }
+        .btn-notes { padding:5px 12px; background:#f0fff4; border:1px solid #c6f6d5; border-radius:6px; color:#276749; font-size:11px; font-weight:500; cursor:pointer; transition:all 0.3s; font-family:'Inter',sans-serif; }
+        .btn-notes:hover { background:#276749; color:white; }
+        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center; }
+        .modal-overlay.active { display:flex; }
+        .modal { background:white; border-radius:14px; padding:28px; width:460px; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
+        .modal-title { font-family:'Playfair Display',serif; font-size:18px; font-style:italic; margin-bottom:16px; color:#1a1a2e; }
+        .modal textarea { width:100%; height:120px; padding:12px; border:1.5px solid #e0e0e0; border-radius:8px; font-family:'Inter',sans-serif; font-size:13px; resize:vertical; outline:none; }
+        .modal textarea:focus { border-color:#276749; }
+        .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:14px; }
+        .btn-save-notes { padding:9px 20px; background:#276749; color:white; border:none; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; font-family:'Inter',sans-serif; }
+        .btn-cancel { padding:9px 16px; background:#f0f0f0; color:#6b7280; border:none; border-radius:8px; font-size:13px; cursor:pointer; font-family:'Inter',sans-serif; }
     </style>
 </head>
 <body>
@@ -118,6 +129,17 @@
         <div class="stat-card">
             <div class="stat-num pink" id="statFemalePct">—</div>
             <div class="stat-label">♀ Female Ratio</div>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="notesModal">
+        <div class="modal">
+          <div class="modal-title">Analyst Notes</div>
+          <textarea id="notesText" placeholder="Enter analyst observations..."></textarea>
+          <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeNotes()">Cancel</button>
+            <button class="btn-save-notes" onclick="saveNotes()">Save & Close</button>
+          </div>
         </div>
     </div>
 
@@ -193,6 +215,35 @@
                 '<div class="empty-sub">' + escHtml(err.message) + '</div></div>';
         });
 
+    let currentNotesId = null;
+
+function openNotes(id, existing) {
+    currentNotesId = id;
+    document.getElementById('notesText').value = existing || '';
+    document.getElementById('notesModal').classList.add('active');
+}
+
+function closeNotes() {
+    document.getElementById('notesModal').classList.remove('active');
+    currentNotesId = null;
+}
+
+function saveNotes() {
+    const notes = document.getElementById('notesText').value.trim();
+    const formData = new FormData();
+    formData.append('notes', notes);
+    fetch('/update-notes/' + currentNotesId, { method:'POST', body:formData })
+        .then(r => r.json())
+        .then(() => {
+            // Update local data
+            const pred = allPredictions.find(p => p.id === currentNotesId);
+            if (pred) pred.notes = notes;
+            closeNotes();
+            showFlash('Notes saved successfully.', 'success');
+        })
+        .catch(() => showFlash('Failed to save notes.', 'danger'));
+}
+        
     function renderAll(predictions) {
         const total     = predictions.length;
         const males     = predictions.filter(p => p.sex === 'Male').length;
@@ -279,8 +330,8 @@
                 '<td><span class="td-conf">' + parseFloat(p.age_conf || 0).toFixed(1) + '%</span></td>' +
                 '<td><span class="td-bones" title="' + escHtml(p.bones) + '">' + escHtml(p.bones) + '</span></td>' +
                 '<td><span class="td-date">' + dateStr + '</span></td>' +
-                '<td><button class="btn-delete" onclick="deletePrediction(' + p.id + ', this)">Delete</button></td>' +
                 '<td style="display:flex;gap:6px;align-items:center;">' +
+                '<button class="btn-notes" onclick="openNotes(' + p.id + ', ' + JSON.stringify(p.notes || '') + ')">📝 Notes</button>' +
                 '<a href="/download-report/' + p.id + '" class="btn-download" title="Download PDF">⬇ PDF</a>' +
                 '<button class="btn-delete" onclick="deletePrediction(' + p.id + ', this)">Delete</button>' +
                 '</td>'

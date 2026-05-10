@@ -28,16 +28,17 @@ def init_db():
     )''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS predictions (
-        id             SERIAL PRIMARY KEY,
-        user_id        INTEGER,
-        case_reference TEXT UNIQUE,
-        sex_prediction TEXT,
-        sex_confidence REAL,
-        age_prediction TEXT,
-        age_confidence REAL,
-        bones_used     TEXT,
-        created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id)
+    id             SERIAL PRIMARY KEY,
+    user_id        INTEGER,
+    case_reference TEXT UNIQUE,
+    sex_prediction TEXT,
+    sex_confidence REAL,
+    age_prediction TEXT,
+    age_confidence REAL,
+    bones_used     TEXT,
+    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    analyst_notes  TEXT DEFAULT '',
+    FOREIGN KEY (user_id) REFERENCES users(id)
     )''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS bone_measurements (
@@ -49,6 +50,8 @@ def init_db():
         FOREIGN KEY (prediction_id) REFERENCES predictions(id)
     )''')
 
+    conn.commit()
+    cursor.execute("ALTER TABLE predictions ADD COLUMN IF NOT EXISTS analyst_notes TEXT DEFAULT ''")
     conn.commit()
     cursor.close()
     conn.close()
@@ -109,15 +112,15 @@ def reset_password(username, security_question, security_answer, new_password):
     conn.close()
     return False, 'Invalid username or security answer!'
 
-def save_prediction(user_id, sex_pred, sex_conf, age_pred, age_conf, bones_used, measurements):
+def save_prediction(user_id, sex_pred, sex_conf, age_pred, age_conf, bones_used, measurements, notes=''):
     conn = get_conn()
     cursor = conn.cursor()
     case_ref = f"CASE-{datetime.now().strftime('%Y%m%d%H%M%S')}"
     cursor.execute('''INSERT INTO predictions
         (user_id, case_reference, sex_prediction, sex_confidence,
-         age_prediction, age_confidence, bones_used)
-        VALUES (%s,%s,%s,%s,%s,%s,%s) RETURNING id''',
-        (user_id, case_ref, sex_pred, sex_conf, age_pred, age_conf, ','.join(bones_used))
+         age_prediction, age_confidence, bones_used, analyst_notes)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id''',
+        (user_id, case_ref, sex_pred, sex_conf, age_pred, age_conf, ','.join(bones_used), notes)
     )
     prediction_id = cursor.fetchone()[0]
     for measure_name, measure_value in measurements.items():
@@ -170,7 +173,18 @@ def get_prediction_measurements(prediction_id):
     rows = cursor.fetchall()
     cursor.close()
     conn.close()
-    return {row[0]: row[1] for row in rows}    
+    return {row[0]: row[1] for row in rows}
+
+def update_analyst_notes(prediction_id, user_id, notes):
+    conn = get_conn()
+    cursor = conn.cursor()
+    cursor.execute(
+        'UPDATE predictions SET analyst_notes=%s WHERE id=%s AND user_id=%s',
+        (notes, prediction_id, user_id)
+    )
+    conn.commit()
+    cursor.close()
+    conn.close() 
 
 def get_user_info(user_id):
     conn = get_conn()
