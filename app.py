@@ -15,6 +15,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.units import cm
 import io
+from reportlab.pdfgen import canvas as rl_canvas
 
 app = Flask(__name__)
 app.secret_key = 'forensic_bone_secret_key_2024'
@@ -308,94 +309,243 @@ def delete_pred(prediction_id):
 
 @app.route('/download-report/<int:prediction_id>')
 @login_required
+# ── PDF Report Generator ──────────────────────────────────────────────────────
+
+def generate_forensic_report(output, data):
+    from reportlab.pdfgen import canvas as rl_canvas
+    W, H = A4
+    c = rl_canvas.Canvas(output, pagesize=A4)
+
+    DARK_BLUE   = colors.HexColor('#0d1b2a')
+    MID_BLUE    = colors.HexColor('#1a3a5c')
+    ACCENT      = colors.HexColor('#2e6da4')
+    LIGHT_BLUE  = colors.HexColor('#d6e8f7')
+    LIGHT_GREY  = colors.HexColor('#f5f5f5')
+    MED_GREY    = colors.HexColor('#cccccc')
+    TEXT_DARK   = colors.HexColor('#1a1a2e')
+    TEXT_GREY   = colors.HexColor('#555555')
+    GREEN       = colors.HexColor('#276749')
+    GREEN_LIGHT = colors.HexColor('#e6f4ed')
+    PINK        = colors.HexColor('#9a3a5c')
+    PINK_LIGHT  = colors.HexColor('#fce8f0')
+    WHITE       = colors.white
+    margin      = 1.8 * cm
+
+    # Header band
+    c.setFillColor(DARK_BLUE)
+    c.rect(0, H - 3.5*cm, W, 3.5*cm, fill=1, stroke=0)
+    c.setFillColor(ACCENT)
+    c.rect(0, H - 3.5*cm, W, 0.22*cm, fill=1, stroke=0)
+
+    c.setFillColor(WHITE)
+    c.setFont('Helvetica-Bold', 15)
+    c.drawString(margin, H - 1.5*cm, 'FORENSIC BONE ANALYSIS SYSTEM')
+    c.setFont('Helvetica', 9)
+    c.setFillColor(colors.HexColor('#aac8e8'))
+    c.drawString(margin, H - 2.1*cm, "Sri Lanka Police / Government Analyst's Department")
+    c.setFillColor(WHITE)
+    c.setFont('Helvetica-Bold', 9)
+    c.drawRightString(W - margin, H - 1.5*cm, f"Case Reference: {data.get('case_ref', '—')}")
+    c.setFont('Helvetica', 8)
+    c.setFillColor(colors.HexColor('#aac8e8'))
+    c.drawRightString(W - margin, H - 2.0*cm, 'CONFIDENTIAL')
+
+    y = H - 4.4*cm
+
+    # Section helper
+    def section_header(title):
+        nonlocal y
+        c.setFillColor(ACCENT)
+        c.rect(margin, y - 0.05*cm, 0.35*cm, 0.45*cm, fill=1, stroke=0)
+        c.setFillColor(TEXT_DARK)
+        c.setFont('Helvetica-Bold', 11)
+        c.drawString(margin + 0.55*cm, y, title)
+        y -= 0.5*cm
+        c.setStrokeColor(MED_GREY)
+        c.setLineWidth(0.5)
+        c.line(margin, y, W - margin, y)
+        y -= 0.35*cm
+
+    # Report Information
+    section_header('REPORT INFORMATION')
+    info_left  = [('Report Generated', data.get('generated_at', '—')),
+                  ('Prediction Date',  data.get('created_at', '—')),
+                  ('Bone Type',        data.get('bones', '—'))]
+    info_right = [('Analysis ID', str(data.get('pred_id', '—'))),
+                  ('Analyst',     data.get('analyst', 'System')),
+                  ('System',      'Forensic Bone Analysis v1.0')]
+    col1_x = margin
+    col2_x = W / 2 + 0.5*cm
+    row_h  = 0.55*cm
+
+    for (lbl, val), (lbl2, val2) in zip(info_left, info_right):
+        c.setFont('Helvetica-Bold', 8); c.setFillColor(TEXT_GREY)
+        c.drawString(col1_x, y, lbl + ':')
+        c.setFont('Helvetica', 8); c.setFillColor(TEXT_DARK)
+        c.drawString(col1_x + 3.2*cm, y, str(val))
+        c.setFont('Helvetica-Bold', 8); c.setFillColor(TEXT_GREY)
+        c.drawString(col2_x, y, lbl2 + ':')
+        c.setFont('Helvetica', 8); c.setFillColor(TEXT_DARK)
+        c.drawString(col2_x + 2.5*cm, y, str(val2))
+        y -= row_h
+
+    for lbl, val in [('Models', 'Random Forest (Scikit-learn)'), ('Dataset', '4,501 augmented records')]:
+        c.setFont('Helvetica-Bold', 8); c.setFillColor(TEXT_GREY)
+        c.drawString(col1_x, y, lbl + ':')
+        c.setFont('Helvetica', 8); c.setFillColor(TEXT_DARK)
+        c.drawString(col1_x + 3.2*cm, y, val)
+        y -= row_h
+
+    y -= 0.4*cm
+
+    # Prediction Results
+    section_header('PREDICTION RESULTS')
+    sex      = data.get('sex', 'Male')
+    sex_conf = float(data.get('sex_conf', 0))
+    age      = data.get('age_range', '—')
+    age_conf = float(data.get('age_conf', 0))
+
+    sex_color = ACCENT if sex == 'Male' else PINK
+    sex_bg    = LIGHT_BLUE if sex == 'Male' else PINK_LIGHT
+    card_w    = (W - 2*margin - 0.6*cm) / 2
+    card_h    = 3.2*cm
+    bar_w     = card_w - 0.8*cm
+
+    # Sex card
+    c.setFillColor(sex_bg)
+    c.roundRect(margin, y - card_h, card_w, card_h, 6, fill=1, stroke=0)
+    c.setStrokeColor(sex_color); c.setLineWidth(1.5)
+    c.roundRect(margin, y - card_h, card_w, card_h, 6, fill=0, stroke=1)
+    c.setFillColor(sex_color); c.setFont('Helvetica-Bold', 8)
+    c.drawString(margin + 0.4*cm, y - 0.5*cm, 'BIOLOGICAL SEX')
+    c.setFont('Helvetica-Bold', 26)
+    c.drawString(margin + 0.4*cm, y - 1.6*cm, sex)
+    bx, by = margin + 0.4*cm, y - 2.3*cm
+    c.setFillColor(MED_GREY); c.roundRect(bx, by, bar_w, 0.28*cm, 3, fill=1, stroke=0)
+    c.setFillColor(sex_color); c.roundRect(bx, by, bar_w*(sex_conf/100), 0.28*cm, 3, fill=1, stroke=0)
+    c.setFont('Helvetica-Bold', 9); c.setFillColor(sex_color)
+    c.drawString(bx, by - 0.45*cm, f'Confidence: {sex_conf}%')
+
+    # Age card
+    age_x = margin + card_w + 0.6*cm
+    c.setFillColor(GREEN_LIGHT)
+    c.roundRect(age_x, y - card_h, card_w, card_h, 6, fill=1, stroke=0)
+    c.setStrokeColor(GREEN); c.setLineWidth(1.5)
+    c.roundRect(age_x, y - card_h, card_w, card_h, 6, fill=0, stroke=1)
+    c.setFillColor(GREEN); c.setFont('Helvetica-Bold', 8)
+    c.drawString(age_x + 0.4*cm, y - 0.5*cm, 'AGE GROUP')
+    c.setFont('Helvetica-Bold', 22)
+    c.drawString(age_x + 0.4*cm, y - 1.6*cm, age + ' years')
+    bx2, by2 = age_x + 0.4*cm, y - 2.3*cm
+    c.setFillColor(MED_GREY); c.roundRect(bx2, by2, bar_w, 0.28*cm, 3, fill=1, stroke=0)
+    c.setFillColor(GREEN); c.roundRect(bx2, by2, bar_w*(age_conf/100), 0.28*cm, 3, fill=1, stroke=0)
+    c.setFont('Helvetica-Bold', 9); c.setFillColor(GREEN)
+    c.drawString(bx2, by2 - 0.45*cm, f'Confidence: {age_conf}%')
+
+    y -= card_h + 0.7*cm
+
+    # Measurements
+    measurements = data.get('measurements', {})
+    if measurements:
+        section_header('BONE MEASUREMENTS ENTERED')
+        col_w  = (W - 2*margin) / 2
+        row_ht = 0.55*cm
+        c.setFillColor(MID_BLUE)
+        c.rect(margin, y - row_ht, W - 2*margin, row_ht, fill=1, stroke=0)
+        c.setFillColor(WHITE); c.setFont('Helvetica-Bold', 9)
+        c.drawString(margin + 0.3*cm, y - row_ht + 0.15*cm, 'Measurement')
+        c.drawString(margin + col_w + 0.3*cm, y - row_ht + 0.15*cm, 'Value (mm)')
+        y -= row_ht
+        for i, (k, v) in enumerate(measurements.items()):
+            val_str = str(v) if v and float(v) > 0 else 'N/A'
+            c.setFillColor(LIGHT_GREY if i % 2 == 0 else WHITE)
+            c.rect(margin, y - row_ht, W - 2*margin, row_ht, fill=1, stroke=0)
+            c.setStrokeColor(MED_GREY); c.setLineWidth(0.3)
+            c.line(margin, y - row_ht, W - margin, y - row_ht)
+            c.setFillColor(TEXT_DARK); c.setFont('Helvetica', 9)
+            c.drawString(margin + 0.3*cm, y - row_ht + 0.15*cm, k)
+            c.setFont('Helvetica-Bold', 9)
+            c.drawString(margin + col_w + 0.3*cm, y - row_ht + 0.15*cm, val_str)
+            y -= row_ht
+        y -= 0.6*cm
+
+    # Analyst notes
+    notes = data.get('notes', '')
+    if notes:
+        section_header('ANALYST NOTES')
+        notes_h = 1.8*cm
+        c.setFillColor(colors.HexColor('#fffdf0'))
+        c.setStrokeColor(colors.HexColor('#e0cc80')); c.setLineWidth(0.5)
+        c.roundRect(margin, y - notes_h, W - 2*margin, notes_h, 4, fill=1, stroke=1)
+        c.setFillColor(TEXT_DARK); c.setFont('Helvetica', 8.5)
+        words = notes.split(); lines_n, cur = [], ''
+        for w in words:
+            if len(cur) + len(w) + 1 <= 115:
+                cur = cur + ' ' + w if cur else w
+            else:
+                lines_n.append(cur); cur = w
+        if cur: lines_n.append(cur)
+        note_y = y - 0.45*cm
+        for ln in lines_n[:3]:
+            c.drawString(margin + 0.4*cm, note_y, ln); note_y -= 0.45*cm
+
+    # Footer
+    footer_h = 2.2*cm
+    c.setFillColor(LIGHT_GREY)
+    c.rect(0, 0, W, footer_h, fill=1, stroke=0)
+    c.setStrokeColor(ACCENT); c.setLineWidth(1)
+    c.line(0, footer_h, W, footer_h)
+    c.setFillColor(TEXT_GREY); c.setFont('Helvetica', 7)
+    disclaimer = ('DISCLAIMER: This report is generated by an AI-assisted decision support system. '
+                  'Predictions are based on statistical models trained on skeletal morphology data and are '
+                  'intended to assist — not replace — the judgement of a qualified forensic expert. '
+                  'All conclusions must be verified by a certified forensic anthropologist before use in '
+                  'any legal or investigative proceeding.')
+    dwords = disclaimer.split(); dlines, dcur = [], ''
+    for w in dwords:
+        if len(dcur) + len(w) + 1 <= 140:
+            dcur = dcur + ' ' + w if dcur else w
+        else:
+            dlines.append(dcur); dcur = w
+    if dcur: dlines.append(dcur)
+    dy = footer_h - 0.5*cm
+    for dl in dlines[:3]:
+        c.drawString(margin, dy, dl); dy -= 0.32*cm
+    c.setFont('Helvetica-Bold', 7); c.setFillColor(ACCENT)
+    c.drawCentredString(W/2, 0.35*cm,
+        f"Generated by Forensic Bone Analysis System  ·  {data.get('generated_at', '—')}")
+    c.save()
+
+
+@app.route('/download-report/<int:prediction_id>')
+@login_required
 def download_report(prediction_id):
-    # DB eken prediction gannawa
+    import datetime
     rows = get_user_predictions(session['user_id'])
     pred = next((r for r in rows if r[0] == prediction_id), None)
     if not pred:
         abort(404)
 
-    # pred tuple: (id, user_id, case_ref, sex, sex_conf, age_range, age_conf, bones, created_at)
-    pred_id    = pred[0]
-    case_ref   = pred[2]
-    sex        = pred[3]
-    sex_conf   = pred[4]
-    age_range  = pred[5]
-    age_conf   = pred[6]
-    bones      = pred[7]
-    created_at = str(pred[8]) if pred[8] else 'N/A'
+    data = {
+        'case_ref':     pred[2],
+        'generated_at': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'created_at':   str(pred[8]) if pred[8] else '—',
+        'bones':        pred[7],
+        'pred_id':      pred[0],
+        'analyst':      session.get('full_name', 'System'),
+        'sex':          pred[3],
+        'sex_conf':     float(pred[4]),
+        'age_range':    pred[5],
+        'age_conf':     float(pred[6]),
+        'measurements': {},
+        'notes':        '',
+    }
 
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4,
-                            rightMargin=2*cm, leftMargin=2*cm,
-                            topMargin=2*cm, bottomMargin=2*cm)
-
-    styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('CustomTitle', parent=styles['Title'],
-                                  fontSize=20, textColor=colors.HexColor('#2c3e50'),
-                                  spaceAfter=6)
-    sub_style = ParagraphStyle('Sub', parent=styles['Normal'],
-                                fontSize=9, textColor=colors.HexColor('#7f8c8d'),
-                                spaceAfter=16)
-    heading_style = ParagraphStyle('Heading', parent=styles['Heading2'],
-                                    fontSize=13, textColor=colors.HexColor('#2980b9'),
-                                    spaceBefore=14, spaceAfter=6)
-    disclaimer_style = ParagraphStyle('Disclaimer', parent=styles['Normal'],
-                                       fontSize=8, textColor=colors.grey,
-                                       alignment=1)
-
-    story = []
-
-    # Title
-    story.append(Paragraph("Forensic Bone Analysis Report", title_style))
-    story.append(Paragraph(
-        f"Case Reference: {case_ref} &nbsp;&nbsp;|&nbsp;&nbsp; Generated: {created_at}",
-        sub_style
-    ))
-
-    # Results
-    story.append(Paragraph("Prediction Results", heading_style))
-    result_data = [
-        ['Parameter', 'Prediction', 'Confidence'],
-        ['Biological Sex', sex, f"{sex_conf}%"],
-        ['Age Range', age_range, f"{age_conf}%"],
-    ]
-    result_table = Table(result_data, colWidths=[5.5*cm, 7*cm, 4*cm])
-    result_table.setStyle(TableStyle([
-        ('BACKGROUND',   (0,0), (-1,0), colors.HexColor('#2c3e50')),
-        ('TEXTCOLOR',    (0,0), (-1,0), colors.white),
-        ('FONTNAME',     (0,0), (-1,0), 'Helvetica-Bold'),
-        ('FONTSIZE',     (0,0), (-1,0), 11),
-        ('ALIGN',        (0,0), (-1,-1), 'CENTER'),
-        ('ROWBACKGROUNDS',(0,1),(-1,-1), [colors.white, colors.HexColor('#eaf4fb')]),
-        ('GRID',         (0,0), (-1,-1), 0.5, colors.HexColor('#bdc3c7')),
-        ('FONTNAME',     (0,1), (-1,-1), 'Helvetica'),
-        ('FONTSIZE',     (0,1), (-1,-1), 10),
-        ('TOPPADDING',   (0,0), (-1,-1), 8),
-        ('BOTTOMPADDING',(0,0), (-1,-1), 8),
-    ]))
-    story.append(result_table)
-
-    # Bones analysed
-    story.append(Paragraph("Bones Analysed", heading_style))
-    bones_list = bones if isinstance(bones, str) else ', '.join(bones)
-    story.append(Paragraph(bones_list, styles['Normal']))
-
-    # Disclaimer
-    story.append(Spacer(1, 1.5*cm))
-    story.append(Paragraph(
-        "This report is generated by the Forensic Bone Analysis System. "
-        "Results are for research and investigative purposes only and must be "
-        "interpreted by a qualified forensic expert.",
-        disclaimer_style
-    ))
-
-    doc.build(story)
+    generate_forensic_report(buffer, data)
     buffer.seek(0)
-
-    filename = f"forensic_report_{case_ref}.pdf"
     return send_file(buffer, as_attachment=True,
-                     download_name=filename,
+                     download_name=f"forensic_report_{pred[2]}.pdf",
                      mimetype='application/pdf')
 
 
