@@ -262,8 +262,9 @@ def predict():
 @app.route('/history')
 @login_required
 def history():
-    # Pure HTML file — Jinja2 නෑ, data JS fetch() කරනවා
-    return send_from_directory('templates', 'history.html')
+    # render_template() use කරනවා — හැබැයි Jinja2 data pass කරන්නේ නෑ
+    # history.html එකේ Jinja2 tags නෑ, data JS fetch() කරනවා
+    return render_template('history.html')
 
 
 @app.route('/api/me')
