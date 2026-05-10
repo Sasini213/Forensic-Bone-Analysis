@@ -3,7 +3,7 @@ import joblib
 import numpy as np
 import pandas as pd
 from flask import (Flask, render_template, request, redirect, url_for,
-                   session, flash, jsonify, send_file, abort)
+                   session, flash, jsonify, send_file, abort, send_from_directory)
 from ml_model.database import (init_db, save_prediction, register_user, login_user,
                                 get_user_predictions, reset_password, delete_prediction,
                                 get_user_info, change_password, get_conn)
@@ -136,7 +136,7 @@ def login():
         success, result = login_user(username, password)
         if success:
             session['user_id']   = result['id']
-            session['username']  = result['username']   # FIX: username save කරනවා
+            session['username']  = result['username']
             session['full_name'] = result['full_name']
             flash(f"Welcome, {result['full_name']}!", 'success')
             return redirect(url_for('index'))
@@ -257,22 +257,51 @@ def predict():
     )
 
 
+# ── History + API routes ──────────────────────────────────────────────────────
+
 @app.route('/history')
 @login_required
 def history():
-    predictions = get_user_predictions(session['user_id'])
-    return render_template('history.html',
-        predictions=predictions,
-        full_name=session.get('full_name'),
-    )
+    # Pure HTML file — Jinja2 නෑ, data JS fetch() කරනවා
+    return send_from_directory('templates', 'history.html')
+
+
+@app.route('/api/me')
+@login_required
+def api_me():
+    # Nav bar username get කරන්න
+    return jsonify({'full_name': session.get('full_name', 'User')})
+
+
+@app.route('/api/predictions')
+@login_required
+def api_predictions():
+    # Table data JSON විදිහට return කරනවා
+    rows = get_user_predictions(session['user_id'])
+    predictions = []
+    for r in rows:
+        predictions.append({
+            'id':         r[0],
+            'case_ref':   r[2],
+            'sex':        r[3],
+            'sex_conf':   r[4],
+            'age_range':  r[5],
+            'age_conf':   r[6],
+            'bones':      r[7],
+            'created_at': str(r[8]) if r[8] else None,
+        })
+    return jsonify({'predictions': predictions})
+
 
 @app.route('/delete-prediction/<int:prediction_id>', methods=['POST'])
 @login_required
 def delete_pred(prediction_id):
     delete_prediction(prediction_id, session['user_id'])
-    flash('Case deleted successfully.', 'success')
-    return redirect(url_for('history'))
+    # JSON return කරනවා — JS fetch() handle කරනවා
+    return jsonify({'success': True})
 
+
+# ── Profile routes ────────────────────────────────────────────────────────────
 
 @app.route('/profile')
 @login_required

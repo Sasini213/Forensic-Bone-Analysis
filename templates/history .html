@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History — Forensic Bone Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#d0d4dc; min-height:100vh; color:#1a1a2e; }
+        nav { background:#060d18; padding:0 40px; height:58px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 20px rgba(0,0,0,0.3); }
+        .nav-brand { display:flex; align-items:center; gap:12px; }
+        .nav-icon { width:30px; height:30px; border:1px solid rgba(100,180,255,0.3); display:flex; align-items:center; justify-content:center; font-size:13px; border-radius:6px; }
+        .nav-title { font-family:'Playfair Display',serif; font-size:16px; color:#7bb8d4; letter-spacing:1px; }
+        .nav-right { display:flex; align-items:center; gap:8px; }
+        .nav-user { font-size:12px; color:rgba(255,255,255,0.5); margin-right:8px; }
+        .nav-btn { padding:7px 16px; font-size:12px; font-weight:500; text-decoration:none; border-radius:6px; transition:all 0.3s; border:1px solid; }
+        .btn-primary { background:rgba(123,184,212,0.15); color:#7bb8d4; border-color:rgba(123,184,212,0.3); }
+        .btn-primary:hover { background:rgba(123,184,212,0.25); }
+        .btn-danger { background:rgba(220,53,69,0.15); color:#ff6b6b; border-color:rgba(220,53,69,0.3); }
+        .btn-danger:hover { background:rgba(220,53,69,0.25); }
+        .main { max-width:1200px; margin:0 auto; padding:32px 24px 60px; }
+        .page-label { font-size:11px; letter-spacing:3px; color:#9aa0b0; text-transform:uppercase; margin-bottom:6px; }
+        .page-title { font-family:'Playfair Display',serif; font-size:32px; color:#1a1a2e; margin-bottom:28px; }
+        .page-title em { font-style:italic; color:#7bb8d4; }
+        .alert { padding:10px 16px; border-radius:8px; margin-bottom:20px; font-size:13px; border-left:3px solid; }
+        .alert-success { background:#f0fff4; border-color:#38a169; color:#276749; }
+        .alert-danger  { background:#fff0f0; border-color:#e53e3e; color:#c53030; }
+        .stats-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:16px; margin-bottom:28px; }
+        .stat-card { background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+        .stat-num { font-family:'Playfair Display',serif; font-size:38px; font-weight:400; color:#1a1a2e; line-height:1; }
+        .stat-num.blue  { color:#2b6cb0; }
+        .stat-num.pink  { color:#9a5a6a; }
+        .stat-num.green { color:#276749; }
+        .stat-label { font-size:11px; letter-spacing:1px; color:#9aa0b0; text-transform:uppercase; margin-top:6px; }
+        .charts-grid { display:none; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:28px; }
+        .chart-card { background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+        .chart-title { font-size:13px; font-weight:600; color:#1a1a2e; margin-bottom:16px; }
+        .chart-wrap { position:relative; height:180px; }
+        .filter-bar { background:white; border-radius:12px; padding:16px 20px; margin-bottom:20px; display:flex; gap:12px; align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.06); flex-wrap:wrap; }
+        .filter-bar input, .filter-bar select { padding:9px 14px; border:1.5px solid #e0e0e0; border-radius:8px; font-size:13px; font-family:'Inter',sans-serif; color:#1a1a2e; outline:none; transition:border-color 0.3s; background:white; }
+        .filter-bar input:focus, .filter-bar select:focus { border-color:#060d18; }
+        .search-input { flex:1; min-width:200px; }
+        .filter-count { font-size:12px; color:#9aa0b0; margin-left:auto; white-space:nowrap; }
+        .btn-clear { padding:9px 16px; background:#f0f0f0; border:none; border-radius:8px; font-size:12px; color:#6b7280; cursor:pointer; }
+        .btn-clear:hover { background:#e0e0e0; }
+        .table-card { background:white; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+        .table-head { padding:16px 20px; border-bottom:1px solid #f0f0f0; }
+        .table-head-title { font-family:'Playfair Display',serif; font-size:16px; font-style:italic; color:#1a1a2e; }
+        table { width:100%; border-collapse:collapse; }
+        thead tr { background:#f8f9fa; }
+        th { padding:11px 16px; text-align:left; font-size:11px; letter-spacing:1px; color:#9aa0b0; text-transform:uppercase; font-weight:500; border-bottom:1px solid #f0f0f0; }
+        td { padding:13px 16px; border-bottom:1px solid #f8f8f8; font-size:13px; vertical-align:middle; }
+        tr:last-child td { border-bottom:none; }
+        tbody tr:hover { background:#fafafa; }
+        .td-ref { font-family:'Playfair Display',serif; font-size:13px; font-style:italic; color:#1a1a2e; font-weight:600; }
+        .pill { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; font-size:11px; font-weight:500; border-radius:20px; }
+        .pill-male   { background:#ebf8ff; color:#2b6cb0; }
+        .pill-female { background:#fff0f6; color:#9a5a6a; }
+        .pill-age    { background:#f0fff4; color:#276749; border:1px solid #c6f6d5; }
+        .td-conf  { font-size:13px; color:#6b7280; font-weight:500; }
+        .td-bones { font-size:11px; color:#9aa0b0; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .td-date  { font-size:11px; color:#b0b8c8; }
+        .btn-delete { padding:5px 12px; background:#fff0f0; border:1px solid #fed7d7; border-radius:6px; color:#c53030; font-size:11px; font-weight:500; cursor:pointer; transition:all 0.3s; font-family:'Inter',sans-serif; }
+        .btn-delete:hover { background:#c53030; color:white; }
+        .empty { padding:60px; text-align:center; }
+        .empty-icon { font-size:40px; margin-bottom:14px; opacity:0.3; }
+        .empty-title { font-family:'Playfair Display',serif; font-size:18px; font-style:italic; color:#9aa0b0; margin-bottom:6px; }
+        .empty-sub { font-size:12px; color:#b0b8c8; }
+        .empty-sub a { color:#060d18; text-decoration:none; font-weight:600; }
+        .no-results { text-align:center; padding:40px; color:#9aa0b0; font-size:13px; display:none; }
+        .loading { text-align:center; padding:60px; color:#9aa0b0; font-size:13px; }
+        .spinner { display:inline-block; width:24px; height:24px; border:2px solid #e0e0e0; border-top-color:#7bb8d4; border-radius:50%; animation:spin 0.8s linear infinite; margin-bottom:12px; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-brand">
+        <div class="nav-icon">🦴</div>
+        <span class="nav-title">Forensic Bone Analysis</span>
+    </div>
+    <div class="nav-right">
+        <span class="nav-user" id="navUser">👤 Loading...</span>
+        <a href="/profile" class="nav-btn btn-primary">Profile</a>
+        <a href="/index"   class="nav-btn btn-primary">New Analysis</a>
+        <a href="/logout"  class="nav-btn btn-danger">Logout</a>
+    </div>
+</nav>
+
+<div class="main">
+    <div class="page-label">Case Management</div>
+    <div class="page-title">Prediction <em>History</em></div>
+
+    <div id="flashMsg"></div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-num" id="statTotal">—</div>
+            <div class="stat-label">Total Cases</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-num blue" id="statMales">—</div>
+            <div class="stat-label">♂ Male Predictions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-num pink" id="statFemales">—</div>
+            <div class="stat-label">♀ Female Predictions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-num green" id="statMalePct">—</div>
+            <div class="stat-label">♂ Male Ratio</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-num pink" id="statFemalePct">—</div>
+            <div class="stat-label">♀ Female Ratio</div>
+        </div>
+    </div>
+
+    <div class="charts-grid" id="chartsGrid">
+        <div class="chart-card">
+            <div class="chart-title">Sex Distribution</div>
+            <div class="chart-wrap"><canvas id="sexChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">Age Range Distribution</div>
+            <div class="chart-wrap"><canvas id="ageChart"></canvas></div>
+        </div>
+    </div>
+
+    <div class="filter-bar">
+        <input type="text" class="search-input" id="searchInput" placeholder="🔍 Search by case reference or bones...">
+        <select id="sexFilter">
+            <option value="">All Sex</option>
+            <option value="Male">♂ Male</option>
+            <option value="Female">♀ Female</option>
+        </select>
+        <select id="ageFilter">
+            <option value="">All Age Ranges</option>
+            <option value="18-25">18-25</option>
+            <option value="25-35">25-35</option>
+            <option value="35-45">35-45</option>
+            <option value="45-55">45-55</option>
+            <option value="55+">55+</option>
+        </select>
+        <button class="btn-clear" onclick="clearFilters()">Clear</button>
+        <span class="filter-count" id="filterCount">— records</span>
+    </div>
+
+    <div class="table-card">
+        <div class="table-head">
+            <div class="table-head-title">Case Records</div>
+        </div>
+        <div id="tableContainer">
+            <div class="loading">
+                <div class="spinner"></div><br>Loading cases...
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let allPredictions = [];
+    let sexChartInst = null;
+    let ageChartInst = null;
+
+    // Fetch current user name
+    fetch('/api/me')
+        .then(r => r.json())
+        .then(d => {
+            document.getElementById('navUser').textContent = '👤 ' + (d.full_name || 'User');
+        })
+        .catch(() => {});
+
+    // Fetch predictions from Flask API
+    fetch('/api/predictions')
+        .then(r => {
+            if (!r.ok) throw new Error('Server error: ' + r.status);
+            return r.json();
+        })
+        .then(data => {
+            allPredictions = data.predictions || [];
+            renderAll(allPredictions);
+        })
+        .catch(err => {
+            document.getElementById('tableContainer').innerHTML =
+                '<div class="empty"><div class="empty-icon">⚠️</div>' +
+                '<div class="empty-title">Failed to load cases</div>' +
+                '<div class="empty-sub">' + escHtml(err.message) + '</div></div>';
+        });
+
+    function renderAll(predictions) {
+        const total     = predictions.length;
+        const males     = predictions.filter(p => p.sex === 'Male').length;
+        const females   = total - males;
+        const malePct   = total > 0 ? (males   / total * 100).toFixed(1) : 0;
+        const femalePct = total > 0 ? (females / total * 100).toFixed(1) : 0;
+
+        document.getElementById('statTotal').textContent     = total;
+        document.getElementById('statMales').textContent     = males;
+        document.getElementById('statFemales').textContent   = females;
+        document.getElementById('statMalePct').textContent   = malePct + '%';
+        document.getElementById('statFemalePct').textContent = femalePct + '%';
+        document.getElementById('filterCount').textContent   = total + ' records';
+
+        if (total > 0) {
+            document.getElementById('chartsGrid').style.display = 'grid';
+            renderCharts(males, females, predictions);
+        }
+
+        renderTable(predictions);
+    }
+
+    function renderCharts(males, females, predictions) {
+        if (sexChartInst) sexChartInst.destroy();
+        sexChartInst = new Chart(
+            document.getElementById('sexChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Male', 'Female'],
+                datasets: [{ data: [males, females], backgroundColor: ['#4a90d9','#e8789a'], borderWidth:0, hoverOffset:6 }]
+            },
+            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ font:{size:12}, padding:16 }}}}
+        });
+
+        const ageLabels = ['18-25','25-35','35-45','45-55','55+'];
+        const mc = {}, fc = {};
+        predictions.forEach(p => {
+            if (p.sex === 'Male') mc[p.age_range] = (mc[p.age_range] || 0) + 1;
+            else                  fc[p.age_range] = (fc[p.age_range] || 0) + 1;
+        });
+
+        if (ageChartInst) ageChartInst.destroy();
+        ageChartInst = new Chart(
+            document.getElementById('ageChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ageLabels,
+                datasets: [
+                    { label:'Male',   data: ageLabels.map(l => mc[l] || 0), backgroundColor:'#4a90d9', borderRadius:6, borderWidth:0 },
+                    { label:'Female', data: ageLabels.map(l => fc[l] || 0), backgroundColor:'#e8789a', borderRadius:6, borderWidth:0 }
+                ]
+            },
+            options: {
+                responsive:true, maintainAspectRatio:false,
+                plugins:{ legend:{ display:true, position:'bottom', labels:{ font:{size:12}, padding:12 }}},
+                scales:{ y:{ beginAtZero:true, ticks:{stepSize:1}, grid:{color:'#f0f0f0'} }, x:{ grid:{display:false} } }
+            }
+        });
+    }
+
+    function renderTable(predictions) {
+        const container = document.getElementById('tableContainer');
+        if (predictions.length === 0) {
+            container.innerHTML =
+                '<div class="empty"><div class="empty-icon">🦴</div>' +
+                '<div class="empty-title">No cases recorded yet</div>' +
+                '<div class="empty-sub">Begin your first → <a href="/index">New Analysis</a></div></div>';
+            return;
+        }
+
+        const rows = predictions.map(p => {
+            const sexClass = p.sex === 'Male' ? 'pill-male' : 'pill-female';
+            const sexIcon  = p.sex === 'Male' ? '♂' : '♀';
+            const dateStr  = p.created_at ? p.created_at.substring(0, 16) : '—';
+            return '<tr class="data-row"' +
+                ' data-ref="'   + escHtml(p.case_ref)  + '"' +
+                ' data-sex="'   + escHtml(p.sex)       + '"' +
+                ' data-age="'   + escHtml(p.age_range) + '"' +
+                ' data-bones="' + escHtml(p.bones)     + '">' +
+                '<td><div class="td-ref">'  + escHtml(p.case_ref) + '</div></td>' +
+                '<td><span class="pill ' + sexClass + '">' + sexIcon + ' ' + escHtml(p.sex) + '</span></td>' +
+                '<td><span class="td-conf">' + parseFloat(p.sex_conf || 0).toFixed(1) + '%</span></td>' +
+                '<td><span class="pill pill-age">' + escHtml(p.age_range) + ' yrs</span></td>' +
+                '<td><span class="td-conf">' + parseFloat(p.age_conf || 0).toFixed(1) + '%</span></td>' +
+                '<td><span class="td-bones" title="' + escHtml(p.bones) + '">' + escHtml(p.bones) + '</span></td>' +
+                '<td><span class="td-date">' + dateStr + '</span></td>' +
+                '<td><button class="btn-delete" onclick="deletePrediction(' + p.id + ', this)">Delete</button></td>' +
+                '</tr>';
+        }).join('');
+
+        container.innerHTML =
+            '<table><thead><tr>' +
+            '<th>Case Reference</th><th>Sex</th><th>Sex Conf.</th>' +
+            '<th>Age Range</th><th>Age Conf.</th><th>Bones Used</th>' +
+            '<th>Date</th><th>Action</th>' +
+            '</tr></thead>' +
+            '<tbody id="tableBody">' + rows + '</tbody></table>' +
+            '<div class="no-results" id="noResults">No matching records found.</div>';
+    }
+
+    function deletePrediction(id, btn) {
+        if (!confirm('Delete this case?')) return;
+        btn.disabled = true;
+        btn.textContent = '...';
+        fetch('/delete-prediction/' + id, { method: 'POST' })
+            .then(r => {
+                if (!r.ok) throw new Error('Delete failed');
+                allPredictions = allPredictions.filter(p => p.id !== id);
+                renderAll(allPredictions);
+                showFlash('Case deleted successfully.', 'success');
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.textContent = 'Delete';
+                showFlash('Failed to delete case.', 'danger');
+            });
+    }
+
+    function showFlash(msg, type) {
+        const el = document.getElementById('flashMsg');
+        el.innerHTML = '<div class="alert alert-' + type + '">' + escHtml(msg) + '</div>';
+        setTimeout(() => { el.innerHTML = ''; }, 4000);
+    }
+
+    function filterTable() {
+        const search = document.getElementById('searchInput').value.toLowerCase();
+        const sex    = document.getElementById('sexFilter').value;
+        const age    = document.getElementById('ageFilter').value;
+        const rows   = document.querySelectorAll('.data-row');
+        let visible  = 0;
+        rows.forEach(row => {
+            const ok = (!search || (row.dataset.ref||'').toLowerCase().includes(search) || (row.dataset.bones||'').toLowerCase().includes(search))
+                    && (!sex || row.dataset.sex === sex)
+                    && (!age || row.dataset.age === age);
+            row.style.display = ok ? '' : 'none';
+            if (ok) visible++;
+        });
+        document.getElementById('filterCount').textContent = visible + ' records';
+        const nr = document.getElementById('noResults');
+        if (nr) nr.style.display = visible === 0 ? 'block' : 'none';
+    }
+
+    function clearFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('sexFilter').value   = '';
+        document.getElementById('ageFilter').value   = '';
+        filterTable();
+    }
+
+    document.getElementById('searchInput').addEventListener('input', filterTable);
+    document.getElementById('sexFilter').addEventListener('change', filterTable);
+    document.getElementById('ageFilter').addEventListener('change', filterTable);
+
+    function escHtml(str) {
+        if (str == null) return '';
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+</script>
+</body>
+</html>
