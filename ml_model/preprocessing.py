@@ -20,12 +20,12 @@ def standardize_age(age):
         exact_age = float(age)
         if 18 <= exact_age < 25:
             return '18-25'
-        elif 25 <= exact_age < 35:
-            return '25-35'
-        elif 35 <= exact_age < 45:
-            return '35-45'
-        elif 45 <= exact_age < 55:
-            return '45-55'
+        elif 26 <= exact_age < 35:
+            return '26-35'
+        elif 36 <= exact_age < 45:
+            return '36-45'
+        elif 46 <= exact_age < 55:
+            return '46-55'
         else:
             return '55+'
     except:
