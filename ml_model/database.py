@@ -4,11 +4,11 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
 
-# =====================================================================
-# PostgreSQL connection — Supabase
-# YOUR_PASSWORD_HERE තැන ඔයාගේ Supabase password එක දාන්න
-# =====================================================================
 DATABASE_URL = os.environ.get('DATABASE_URL')
+
+# Render gives postgres:// but psycopg2 needs postgresql://
+if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
+    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
 
 def get_conn():
     return psycopg2.connect(DATABASE_URL)
@@ -145,7 +145,6 @@ def get_user_predictions(user_id):
     rows = cursor.fetchall()
     cursor.close()
     conn.close()
-    # created_at datetime object → string convert කරනවා
     results = []
     for row in rows:
         row = list(row)
@@ -184,7 +183,7 @@ def update_analyst_notes(prediction_id, user_id, notes):
     )
     conn.commit()
     cursor.close()
-    conn.close() 
+    conn.close()
 
 def get_user_info(user_id):
     conn = get_conn()
