@@ -164,9 +164,9 @@
         <select id="ageFilter">
             <option value="">All Age Ranges</option>
             <option value="18-25">18-25</option>
-            <option value="25-35">25-35</option>
-            <option value="35-45">35-45</option>
-            <option value="45-55">45-55</option>
+            <option value="26-35">26-35</option>
+            <option value="36-45">36-45</option>
+            <option value="46-55">46-55</option>
             <option value="55+">55+</option>
         </select>
         <button class="btn-clear" onclick="clearFilters()">Clear</button>
@@ -278,7 +278,7 @@ function saveNotes() {
             options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ font:{size:12}, padding:16 }}}}
         });
 
-        const ageLabels = ['18-25','25-35','35-45','45-55','55+'];
+        const ageLabels = ['18-25','26-35','36-45','46-55','55+'];
         const mc = {}, fc = {};
         predictions.forEach(p => {
             if (p.sex === 'Male') mc[p.age_range] = (mc[p.age_range] || 0) + 1;
