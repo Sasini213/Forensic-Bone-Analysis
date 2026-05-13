@@ -63,7 +63,7 @@ Forensic-Bone-Analysis/
 
 ```bash
 git clone https://github.com/Sasini213/Forensic-Bone-Analysis.git
-cd Forensic-Bone-Analysis
+cd Bone_Gender_Age_Project
 ```
 
 ### 2. Install dependencies
