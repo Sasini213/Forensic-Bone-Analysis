@@ -7,7 +7,6 @@ from datetime import datetime
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
-# Render gives postgres:// but psycopg2 needs postgresql://
 if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
     DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
 
@@ -29,17 +28,17 @@ def init_db():
     )''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS predictions (
-    id             SERIAL PRIMARY KEY,
-    user_id        INTEGER,
-    case_reference TEXT UNIQUE,
-    sex_prediction TEXT,
-    sex_confidence REAL,
-    age_prediction TEXT,
-    age_confidence REAL,
-    bones_used     TEXT,
-    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    analyst_notes  TEXT DEFAULT '',
-    FOREIGN KEY (user_id) REFERENCES users(id)
+        id             SERIAL PRIMARY KEY,
+        user_id        INTEGER,
+        case_reference TEXT UNIQUE,
+        sex_prediction TEXT,
+        sex_confidence REAL,
+        age_prediction TEXT,
+        age_confidence REAL,
+        bones_used     TEXT,
+        created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        analyst_notes  TEXT DEFAULT '',
+        FOREIGN KEY (user_id) REFERENCES users(id)
     )''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS bone_measurements (
@@ -52,14 +51,32 @@ def init_db():
     )''')
 
     conn.commit()
+
     cursor.execute("ALTER TABLE predictions ADD COLUMN IF NOT EXISTS analyst_notes TEXT DEFAULT ''")
+
+    # Fix sequence mismatch after redeployment
+    cursor.execute("""
+        SELECT setval('bone_measurements_id_seq',
+               COALESCE((SELECT MAX(id) FROM bone_measurements), 0) + 1, false)
+    """)
+    cursor.execute("""
+        SELECT setval('predictions_id_seq',
+               COALESCE((SELECT MAX(id) FROM predictions), 0) + 1, false)
+    """)
+    cursor.execute("""
+        SELECT setval('users_id_seq',
+               COALESCE((SELECT MAX(id) FROM users), 0) + 1, false)
+    """)
+
     conn.commit()
     cursor.close()
     conn.close()
     print("Database initialized successfully!")
 
+
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
+
 
 def register_user(username, password, full_name, security_question='', security_answer=''):
     conn = get_conn()
@@ -78,6 +95,7 @@ def register_user(username, password, full_name, security_question='', security_
         cursor.close()
         conn.close()
 
+
 def login_user(username, password):
     conn = get_conn()
     cursor = conn.cursor()
@@ -91,6 +109,7 @@ def login_user(username, password):
     if user:
         return True, {'id': user[0], 'full_name': user[1]}
     return False, 'Invalid username or password!'
+
 
 def reset_password(username, security_question, security_answer, new_password):
     conn = get_conn()
@@ -113,11 +132,11 @@ def reset_password(username, security_question, security_answer, new_password):
     conn.close()
     return False, 'Invalid username or security answer!'
 
+
 def save_prediction(user_id, sex_pred, sex_conf, age_pred, age_conf, bones_used, measurements, notes=''):
     conn = get_conn()
     cursor = conn.cursor()
-   import uuid
-case_ref = f"CASE-{datetime.now().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:6].upper()}"
+    case_ref = f"CASE-{datetime.now().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:6].upper()}"
     cursor.execute('''INSERT INTO predictions
         (user_id, case_reference, sex_prediction, sex_confidence,
          age_prediction, age_confidence, bones_used, analyst_notes)
@@ -137,6 +156,7 @@ case_ref = f"CASE-{datetime.now().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:6
     conn.close()
     return case_ref
 
+
 def get_user_predictions(user_id):
     conn = get_conn()
     cursor = conn.cursor()
@@ -155,6 +175,7 @@ def get_user_predictions(user_id):
         results.append(tuple(row))
     return results
 
+
 def delete_prediction(prediction_id, user_id):
     conn = get_conn()
     cursor = conn.cursor()
@@ -163,6 +184,7 @@ def delete_prediction(prediction_id, user_id):
     conn.commit()
     cursor.close()
     conn.close()
+
 
 def get_prediction_measurements(prediction_id):
     conn = get_conn()
@@ -176,6 +198,7 @@ def get_prediction_measurements(prediction_id):
     conn.close()
     return {row[0]: row[1] for row in rows}
 
+
 def update_analyst_notes(prediction_id, user_id, notes):
     conn = get_conn()
     cursor = conn.cursor()
@@ -187,6 +210,7 @@ def update_analyst_notes(prediction_id, user_id, notes):
     cursor.close()
     conn.close()
 
+
 def get_user_info(user_id):
     conn = get_conn()
     cursor = conn.cursor()
@@ -196,32 +220,20 @@ def get_user_info(user_id):
     conn.close()
     return row
 
+
 def change_password(user_id, current_password, new_password):
     conn = get_conn()
     cursor = conn.cursor()
-    cursor.execute('SELECT id FROM users WHERE id=%s AND password=%s',
-                   (user_id, hash_password(current_password)))
+    cursor.execute(
+        'SELECT id FROM users WHERE id=%s AND password=%s',
+        (user_id, hash_password(current_password))
+    )
     user = cursor.fetchone()
     if user:
-        cursor.execute('UPDATE users SET password=%s WHERE id=%s',
-                       (hash_password(new_password), user_id))
-     # Fix sequence mismatch after redeployment
-    cursor.execute("""
-        SELECT setval('bone_measurements_id_seq',
-               COALESCE((SELECT MAX(id) FROM bone_measurements), 0) + 1,
-               false)
-    """)
-    cursor.execute("""
-        SELECT setval('predictions_id_seq',
-               COALESCE((SELECT MAX(id) FROM predictions), 0) + 1,
-               false)
-    """)
-    cursor.execute("""
-        SELECT setval('users_id_seq',
-               COALESCE((SELECT MAX(id) FROM users), 0) + 1,
-               false)
-    """)
-    conn.commit()                  
+        cursor.execute(
+            'UPDATE users SET password=%s WHERE id=%s',
+            (hash_password(new_password), user_id)
+        )
         conn.commit()
         cursor.close()
         conn.close()
@@ -229,6 +241,7 @@ def change_password(user_id, current_password, new_password):
     cursor.close()
     conn.close()
     return False, 'Current password is incorrect!'
+
 
 if __name__ == "__main__":
     init_db()
