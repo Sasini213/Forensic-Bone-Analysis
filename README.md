@@ -156,4 +156,5 @@ This system is an AI-assisted decision support tool. Predictions are based on st
 
 ## 👩‍💻 Author
 
+Wijekoon Wijekoon
 Developed as a Final Year Project — BSc (Hons) Computer Science
