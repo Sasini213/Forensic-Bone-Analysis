@@ -4,3 +4,5 @@ __pycache__/
 database/forensic.db
 dataset/
 *.pyc
+backup.py
+forensic_backup.json

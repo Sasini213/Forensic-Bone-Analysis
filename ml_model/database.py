@@ -1,6 +1,7 @@
 import os
 import hashlib
 import psycopg2
+import uuid
 from psycopg2.extras import RealDictCursor
 from datetime import datetime
 
@@ -115,7 +116,8 @@ def reset_password(username, security_question, security_answer, new_password):
 def save_prediction(user_id, sex_pred, sex_conf, age_pred, age_conf, bones_used, measurements, notes=''):
     conn = get_conn()
     cursor = conn.cursor()
-    case_ref = f"CASE-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+   import uuid
+case_ref = f"CASE-{datetime.now().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:6].upper()}"
     cursor.execute('''INSERT INTO predictions
         (user_id, case_reference, sex_prediction, sex_confidence,
          age_prediction, age_confidence, bones_used, analyst_notes)
@@ -203,6 +205,23 @@ def change_password(user_id, current_password, new_password):
     if user:
         cursor.execute('UPDATE users SET password=%s WHERE id=%s',
                        (hash_password(new_password), user_id))
+     # Fix sequence mismatch after redeployment
+    cursor.execute("""
+        SELECT setval('bone_measurements_id_seq',
+               COALESCE((SELECT MAX(id) FROM bone_measurements), 0) + 1,
+               false)
+    """)
+    cursor.execute("""
+        SELECT setval('predictions_id_seq',
+               COALESCE((SELECT MAX(id) FROM predictions), 0) + 1,
+               false)
+    """)
+    cursor.execute("""
+        SELECT setval('users_id_seq',
+               COALESCE((SELECT MAX(id) FROM users), 0) + 1,
+               false)
+    """)
+    conn.commit()                  
         conn.commit()
         cursor.close()
         conn.close()
