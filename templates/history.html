@@ -331,7 +331,7 @@ function saveNotes() {
                 '<td><span class="td-bones" title="' + escHtml(p.bones) + '">' + escHtml(p.bones) + '</span></td>' +
                 '<td><span class="td-date">' + dateStr + '</span></td>' +
                 '<td style="display:flex;gap:6px;align-items:center;">' +
-                '<button class="btn-notes" onclick="openNotes(' + p.id + ', ' + JSON.stringify(p.notes || '') + ')">📝 Notes</button>' +
+                 '<button class="btn-notes" onclick="openNotes(' + p.id + ', decodeURIComponent(\'' + encodeURIComponent(p.notes || '') + '\'))">📝 Notes</button>'
                 '<a href="/download-report/' + p.id + '" class="btn-download" title="Download PDF">⬇ PDF</a>' +
                 '<button class="btn-delete" onclick="deletePrediction(' + p.id + ', this)">Delete</button>' +
                 '</td>'
