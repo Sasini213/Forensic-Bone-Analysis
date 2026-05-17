@@ -166,7 +166,7 @@
                 {% for bone in bone_measurements.keys() %}
                 <div>
                     <input type="checkbox" class="bone-cb" id="b_{{ bone }}"
-                           name="bones" value="{{ bone }}" onchange="toggle('{{ bone }}')">
+                           name="bones" value="{{ bone }}" onchange="toggleSection('{{ bone }}')">
                     <label class="bone-lbl" for="b_{{ bone }}">
                         <span class="bone-emoji">🦴</span>
                         <span class="bone-name">{{ bone }}</span>
@@ -204,17 +204,25 @@
         </div>
 
         <button type="submit" class="btn-analyze">
-            🔬 Initiate Analysis
+            <span aria-hidden="true">🔬</span> Initiate Analysis
         </button>
         <div class="btn-hint">Powered by Random Forest + XGBoost ML Models</div>
     </form>
 </div>
 
 <script>
-function toggle(bone) {
+function toggleSection(bone) {
     const s = document.getElementById('sec_' + bone);
     s.style.display = document.getElementById('b_' + bone).checked ? 'block' : 'none';
 }
+
+document.querySelector('form').addEventListener('submit', function(e) {
+    const checked = document.querySelectorAll('.bone-cb:checked');
+    if (checked.length === 0) {
+        e.preventDefault();
+        alert('Please select at least one bone before analysis!');
+    }
+});
 </script>
 </body>
 </html>
