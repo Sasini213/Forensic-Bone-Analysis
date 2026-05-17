@@ -47,12 +47,10 @@
         .form-group input:focus { border-bottom-color:#060d18; }
         .form-group input::placeholder { color:#c5c9d4; font-size:13px; }
 
-        /* match indicator */
         .match-msg { font-size:11px; margin-top:4px; display:block; height:14px; }
         .match-ok  { color: #38a169; }
         .match-err { color: #e53e3e; }
 
-        /* password strength — FIXED */
         .strength-bar-bg { height:4px; background:#e8e8e8; border-radius:2px; overflow:hidden; margin-top:6px; }
         .strength-bar { height:4px; width:0%; border-radius:2px; transition:all 0.35s; display:block; }
         .strength-text { font-size:10px; margin-top:3px; display:block; min-height:14px; }
@@ -66,6 +64,15 @@
         .security-label { font-size:11px; font-weight:600; color:#c87941; letter-spacing:1px; text-transform:uppercase; margin-bottom:10px; }
         .security-box .form-group { margin-bottom:0; }
         .security-hint { font-size:11px; color:#b0b8c8; margin-top:6px; }
+
+        /* FIX 3: select styles moved here from inline */
+        .security-box select {
+            width:100%; padding:10px 4px; background:#fff;
+            border:1px solid #e0e0e0; border-radius:6px;
+            color:#1a1a2e; font-size:13px; font-family:'Inter',sans-serif;
+            outline:none; cursor:pointer; margin-top:2px;
+        }
+        .security-box select:focus { border-color:#060d18; }
 
         .btn-submit { width:100%; padding:13px; background:#060d18; border:none; border-radius:50px; color:white; font-size:15px; font-weight:600; font-family:'Inter',sans-serif; cursor:pointer; transition:all 0.3s; }
         .btn-submit:hover { background:#1a3a5c; box-shadow:0 8px 25px rgba(6,13,24,0.35); transform:translateY(-1px); }
@@ -211,7 +218,7 @@
             {% endfor %}{% endif %}
         {% endwith %}
 
-        <form method="POST" autocomplete="off">
+        <form method="POST" autocomplete="off" id="regForm">
             <!-- Row 1: Full Name + Username -->
             <div class="form-row">
                 <div class="form-group">
@@ -247,8 +254,8 @@
                 <div class="security-label">🔐 Security Question</div>
                 <div class="form-group">
                     <label>Choose a Question</label>
-                    <select name="security_question" id="security_question" required
-                            style="width:100%;padding:10px 4px;background:#fff;border:1px solid #e0e0e0;border-radius:6px;color:#1a1a2e;font-size:13px;font-family:'Inter',sans-serif;outline:none;cursor:pointer;margin-top:2px;">
+                    <!-- FIX 3: inline style removed — moved to .security-box select CSS block -->
+                    <select name="security_question" id="security_question" required>
                         <option value="" disabled selected>Select a security question...</option>
                         <option value="mother_maiden">What is your mother's maiden name?</option>
                         <option value="first_pet">What was the name of your first pet?</option>
@@ -276,12 +283,15 @@
 const pwd    = document.getElementById('password');
 const cpwd   = document.getElementById('confirm_password');
 const msg    = document.getElementById('match-msg');
+const bar    = document.getElementById('strength-bar');
+const stxt   = document.getElementById('strength-text');
 const btnSub = document.getElementById('submit-btn');
 
+// FIX 1: disabled=true when confirm field empty
 function checkMatch() {
     if (cpwd.value === '') {
         msg.textContent = '';
-        btnSub.disabled = false;
+        btnSub.disabled = true;
         return;
     }
     if (pwd.value === cpwd.value) {
@@ -295,50 +305,7 @@ function checkMatch() {
     }
 }
 
-pwd.addEventListener('input', checkMatch);
-cpwd.addEventListener('input', checkMatch);
-
-// Real-time username availability check
-const unameInput = document.getElementById('username');
-const unameFeedback = document.getElementById('username-feedback');
-let unameTimer = null;
-
-unameInput.addEventListener('input', () => {
-    clearTimeout(unameTimer);
-    const val = unameInput.value.trim();
-    if (val.length === 0) {
-        unameFeedback.textContent = '';
-        unameFeedback.style.color = '';
-        btnSub.disabled = false;
-        return;
-    }
-    unameFeedback.textContent = 'Checking...';
-    unameFeedback.style.color = '#9aa0b0';
-
-    unameTimer = setTimeout(() => {
-        const fd = new FormData();
-        fd.append('username', val);
-        fetch('/check-username', { method: 'POST', body: fd })
-            .then(r => r.json())
-            .then(data => {
-                if (data.available) {
-                    unameFeedback.textContent = '✓ Username available';
-                    unameFeedback.style.color = '#38a169';
-                    btnSub.disabled = false;
-                } else {
-                    unameFeedback.textContent = '✗ Username already taken';
-                    unameFeedback.style.color = '#e53e3e';
-                    btnSub.disabled = true;
-                }
-            });
-    }, 500);
-});
-
-// Password strength checker
-const bar  = document.getElementById('strength-bar');
-const stxt = document.getElementById('strength-text');
-
-pwd.addEventListener('input', () => {
+function checkStrength() {
     const v = pwd.value;
     let score = 0;
     if (v.length >= 6)  score++;
@@ -349,7 +316,6 @@ pwd.addEventListener('input', () => {
 
     bar.className = 'strength-bar';
     if (v.length === 0) {
-        bar.className = 'strength-bar';
         stxt.textContent = '';
         stxt.style.color = '';
     } else if (score <= 1) {
@@ -368,6 +334,57 @@ pwd.addEventListener('input', () => {
         bar.classList.add('s-strong');
         stxt.textContent = 'Strong ✓';
         stxt.style.color = '#38a169';
+    }
+}
+
+// FIX 2: pwd event listeners merged into one
+pwd.addEventListener('input', () => {
+    checkStrength();
+    checkMatch();
+});
+
+cpwd.addEventListener('input', checkMatch);
+
+// Real-time username availability check
+const unameInput    = document.getElementById('username');
+const unameFeedback = document.getElementById('username-feedback');
+let unameTimer = null;
+
+unameInput.addEventListener('input', () => {
+    clearTimeout(unameTimer);
+    const val = unameInput.value.trim();
+    if (val.length === 0) {
+        unameFeedback.textContent = '';
+        unameFeedback.style.color = '';
+        return;
+    }
+    unameFeedback.textContent = 'Checking...';
+    unameFeedback.style.color = '#9aa0b0';
+
+    unameTimer = setTimeout(() => {
+        const fd = new FormData();
+        fd.append('username', val);
+        fetch('/check-username', { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.available) {
+                    unameFeedback.textContent = '✓ Username available';
+                    unameFeedback.style.color = '#38a169';
+                } else {
+                    unameFeedback.textContent = '✗ Username already taken';
+                    unameFeedback.style.color = '#e53e3e';
+                    btnSub.disabled = true;
+                }
+            });
+    }, 500);
+});
+
+// FIX 4: Submit time password length validation
+document.getElementById('regForm').addEventListener('submit', function(e) {
+    if (pwd.value.length < 6) {
+        e.preventDefault();
+        stxt.textContent = 'Password must be at least 6 characters!';
+        stxt.style.color = '#e53e3e';
     }
 });
 </script>
