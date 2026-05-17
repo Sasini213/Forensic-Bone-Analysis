@@ -8,11 +8,10 @@ from ml_model.database import (init_db, save_prediction, register_user, login_us
                                 get_user_predictions, reset_password, delete_prediction,
                                 get_user_info, change_password, get_conn,
                                 get_prediction_measurements, update_analyst_notes)
+import datetime
 from datetime import timedelta
 from functools import wraps
 from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.units import cm
 import io
@@ -570,7 +569,7 @@ def generate_forensic_report(output, data):
 @app.route('/download-report/<int:prediction_id>')
 @login_required
 def download_report(prediction_id):
-    import datetime
+    
     rows = get_user_predictions(session['user_id'])
     pred = next((r for r in rows if r[0] == prediction_id), None)
     if not pred:
