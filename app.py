@@ -260,21 +260,21 @@ def predict():
     gender_conf  = round(float(np.max(avg_gender)) * 100, 2)
     gender_label = 'Female' if gender_pred == 1 else 'Male'
 
-    age_pred  = int(np.argmax(avg_age))
+   age_pred  = int(np.argmax(avg_age))
     age_conf  = round(float(np.max(avg_age)) * 100, 2)
     age_label = label_encoder.inverse_transform([age_pred])[0]
 
-auto_note = generate_auto_note(
-    gender_label, gender_conf,
-    age_label, age_conf,
-    selected_bones, measurements
-)
+    auto_note = generate_auto_note(
+        gender_label, gender_conf,
+        age_label, age_conf,
+        selected_bones, measurements
+    )
 
-case_ref = save_prediction(
-    session['user_id'], gender_label, gender_conf,
-    age_label, age_conf, selected_bones, measurements,
-    notes=auto_note  
-)
+    case_ref, pred_id = save_prediction(
+        session['user_id'], gender_label, gender_conf,
+        age_label, age_conf, selected_bones, measurements,
+        notes=auto_note
+    )
 
     return render_template('result.html',
         gender=gender_label,
@@ -282,7 +282,7 @@ case_ref = save_prediction(
         age=age_label,
         age_conf=age_conf,
         case_ref=case_ref,
-        pred_id=pred_id, 
+        pred_id=pred_id,
         selected_bones=selected_bones,
         full_name=session.get('full_name'),
         measurements=measurements,
