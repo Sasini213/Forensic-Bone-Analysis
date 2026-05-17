@@ -62,15 +62,6 @@
         .status-dot:nth-child(3){animation-delay:1.2s}
         @keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
         .status-text { font-size:9px; letter-spacing:2px; color:rgba(100,200,255,0.5); text-transform:uppercase; }
-        .data-tag {
-            position: absolute; font-size:9px; font-family:monospace;
-            color:rgba(120,200,255,0.6); letter-spacing:1px;
-            animation: tagFloat 4s ease-in-out infinite alternate;
-        }
-        .dt-1{top:22%;left:8%;animation-delay:0s}
-        .dt-2{top:38%;right:6%;animation-delay:1s}
-        .dt-3{top:55%;left:8%;animation-delay:2s}
-        .dt-4{top:70%;right:8%;animation-delay:1.5s}
         @keyframes tagFloat{0%{opacity:0.4}100%{opacity:0.9}}
         .left-bottom {
             position:absolute; bottom:0; left:0; right:0; padding:24px 28px;
@@ -96,8 +87,6 @@
         .alert { padding:10px 14px; border-radius:8px; margin-bottom:16px; font-size:12px; border-left:3px solid; }
         .alert-danger  { background:#fff0f0; border-color:#e53e3e; color:#c53030; }
         .alert-success { background:#f0fff4; border-color:#38a169; color:#276749; }
-        .alert-warning { background:#fffbf0; border-color:#d69e2e; color:#975a16; }
-        .alert-info    { background:#ebf8ff; border-color:#3182ce; color:#2b6cb0; }
         .form-group { margin-bottom:20px; }
         .form-group label { display:block; font-size:11px; font-weight:500; color:#6b7280; letter-spacing:0.8px; text-transform:uppercase; margin-bottom:8px; }
         .form-group input { width:100%; padding:12px 0; background:transparent; border:none; border-bottom:1.5px solid #e0e0e0; color:#1a1a2e; font-size:15px; font-family:'Inter',sans-serif; outline:none; transition:border-color 0.3s; }
@@ -319,7 +308,7 @@
         {% endwith %}
 
         <form method="POST" autocomplete="off">
-    <div class="form-group">
+            <div class="form-group">
         <label>Username</label>
         <input type="text" name="username" required autocomplete="off">
     </div>
