@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Inter',sans-serif; background:#d0d4dc; min-height:100vh; color:#1a1a2e; }
+        body { font-family:'Inter',sans-serif; background:#d0d4dc; min-height:100vh; color:#1a1a2e; position:relative; }
         nav { background:#060d18; padding:0 40px; height:58px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 20px rgba(0,0,0,0.3); }
         .nav-brand { display:flex; align-items:center; gap:12px; }
         .nav-icon { width:30px; height:30px; border:1px solid rgba(100,180,255,0.3); display:flex; align-items:center; justify-content:center; font-size:13px; border-radius:6px; }
@@ -34,7 +34,7 @@
         .stat-num.pink  { color:#9a5a6a; }
         .stat-num.green { color:#276749; }
         .stat-label { font-size:11px; letter-spacing:1px; color:#9aa0b0; text-transform:uppercase; margin-top:6px; }
-        .charts-grid { display:none; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:28px; }
+        .charts-grid {display:grid; grid-template-columns:1fr 1fr; gap:16px;margin-bottom:28px;opacity:0;visibility:hidden; transition:opacity 0.4s; }
         .chart-card { background:white; border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
         .chart-title { font-size:13px; font-weight:600; color:#1a1a2e; margin-bottom:16px; }
         .chart-wrap { position:relative; height:180px; }
@@ -77,7 +77,15 @@
         @keyframes spin { to { transform:rotate(360deg); } }
         .btn-notes { padding:5px 12px; background:#f0fff4; border:1px solid #c6f6d5; border-radius:6px; color:#276749; font-size:11px; font-weight:500; cursor:pointer; transition:all 0.3s; font-family:'Inter',sans-serif; }
         .btn-notes:hover { background:#276749; color:white; }
-        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:1000; align-items:center; justify-content:center; }
+        .modal-overlay {
+    display:none;
+    position:absolute;   /* fixed → absolute */
+    inset:0;
+    background:rgba(0,0,0,0.4);
+    z-index:1000;
+    align-items:center;
+    justify-content:center;
+}
         .modal-overlay.active { display:flex; }
         .modal { background:white; border-radius:14px; padding:28px; width:460px; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
         .modal-title { font-family:'Playfair Display',serif; font-size:18px; font-style:italic; margin-bottom:16px; color:#1a1a2e; }
@@ -259,7 +267,7 @@ function saveNotes() {
         document.getElementById('filterCount').textContent   = total + ' records';
 
         if (total > 0) {
-            document.getElementById('chartsGrid').style.display = 'grid';
+            const cg = document.getElementById('chartsGrid');cg.style.visibility = 'visible';cg.style.opacity    = '1';
             renderCharts(males, females, predictions);
         }
 
@@ -331,10 +339,10 @@ function saveNotes() {
                 '<td><span class="td-bones" title="' + escHtml(p.bones) + '">' + escHtml(p.bones) + '</span></td>' +
                 '<td><span class="td-date">' + dateStr + '</span></td>' +
                 '<td style="display:flex;gap:6px;align-items:center;">' +
-                 '<button class="btn-notes" onclick="openNotes(' + p.id + ', decodeURIComponent(\'' + encodeURIComponent(p.notes || '') + '\'))">📝 Notes</button>'
+                '<button class="btn-notes" onclick="openNotes(' + p.id + ', decodeURIComponent(\'' + encodeURIComponent(p.notes || '') + '\'))">📝 Notes</button>' +
                 '<a href="/download-report/' + p.id + '" class="btn-download" title="Download PDF">⬇ PDF</a>' +
                 '<button class="btn-delete" onclick="deletePrediction(' + p.id + ', this)">Delete</button>' +
-                '</td>'
+                '</td>' +
                 '</tr>';
         }).join('');
 
