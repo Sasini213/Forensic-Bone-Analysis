@@ -154,7 +154,7 @@ def save_prediction(user_id, sex_pred, sex_conf, age_pred, age_conf, bones_used,
     conn.commit()
     cursor.close()
     conn.close()
-    return case_ref
+    return case_ref, prediction_id
 
 
 def get_user_predictions(user_id):

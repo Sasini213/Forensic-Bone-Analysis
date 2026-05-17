@@ -282,6 +282,7 @@ case_ref = save_prediction(
         age=age_label,
         age_conf=age_conf,
         case_ref=case_ref,
+        pred_id=pred_id, 
         selected_bones=selected_bones,
         full_name=session.get('full_name'),
         measurements=measurements,
@@ -590,12 +591,10 @@ def generate_forensic_report(output, data):
     c.save()
 
 
-@app.route('/download-report/<int:prediction_id>')
-@login_required
+@app.route('/download-report/<string:prediction_id>')
 def download_report(prediction_id):
-    
     rows = get_user_predictions(session['user_id'])
-    pred = next((r for r in rows if r[0] == prediction_id), None)
+    pred = next((r for r in rows if r[2] == prediction_id), None)
     if not pred:
         abort(404)
 
