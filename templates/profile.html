@@ -105,7 +105,8 @@
         </div>
         <div class="info-row">
             <span class="info-label">Member Since</span>
-            <span class="info-value">{{ created_at[:10] if created_at else '—' }}</span>
+            <!-- FIX 1: [:10] slice removed — app.py already formats as string -->
+            <span class="info-value">{{ created_at if created_at else '—' }}</span>
         </div>
         <div class="info-row">
             <span class="info-label">Total Cases</span>
@@ -116,7 +117,7 @@
     <!-- Change Password -->
     <div class="profile-card">
         <div class="card-title"><span>🔐</span> Change Password</div>
-        <form method="POST" action="/profile/change-password" autocomplete="off">
+        <form method="POST" action="/profile/change-password" autocomplete="off" id="pwdForm">
             <div class="form-group">
                 <label>Current Password</label>
                 <input type="password" name="current_password" placeholder="Enter current password" required autocomplete="new-password">
@@ -140,12 +141,12 @@
 </div>
 
 <script>
-const newPwd  = document.getElementById('new_password');
-const confPwd = document.getElementById('confirm_password');
+const newPwd   = document.getElementById('new_password');
+const confPwd  = document.getElementById('confirm_password');
 const matchMsg = document.getElementById('match-msg');
-const bar     = document.getElementById('strength-bar');
-const stxt    = document.getElementById('strength-text');
-const btnSub  = document.getElementById('submit-btn');
+const bar      = document.getElementById('strength-bar');
+const stxt     = document.getElementById('strength-text');
+const btnSub   = document.getElementById('submit-btn');
 
 newPwd.addEventListener('input', () => {
     const v = newPwd.value;
@@ -167,13 +168,31 @@ newPwd.addEventListener('input', () => {
 confPwd.addEventListener('input', checkMatch);
 
 function checkMatch() {
-    if (!confPwd.value) { matchMsg.textContent=''; btnSub.disabled=false; return; }
+    // FIX 2: හිස් නම් button disable කරනවා
+    if (!confPwd.value) {
+        matchMsg.textContent = '';
+        btnSub.disabled = true;
+        return;
+    }
     if (newPwd.value === confPwd.value) {
-        matchMsg.textContent='✓ Passwords match'; matchMsg.className='match-msg match-ok'; btnSub.disabled=false;
+        matchMsg.textContent = '✓ Passwords match';
+        matchMsg.className = 'match-msg match-ok';
+        btnSub.disabled = false;
     } else {
-        matchMsg.textContent='✗ Passwords do not match'; matchMsg.className='match-msg match-err'; btnSub.disabled=true;
+        matchMsg.textContent = '✗ Passwords do not match';
+        matchMsg.className = 'match-msg match-err';
+        btnSub.disabled = true;
     }
 }
+
+// FIX 3: Submit time strength validation
+document.getElementById('pwdForm').addEventListener('submit', function(e) {
+    if (newPwd.value.length < 6) {
+        e.preventDefault();
+        stxt.textContent = 'Password must be at least 6 characters!';
+        stxt.style.color = '#e53e3e';
+    }
+});
 </script>
 </body>
 </html>
