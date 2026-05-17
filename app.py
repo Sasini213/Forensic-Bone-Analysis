@@ -199,6 +199,23 @@ def index():
         full_name=session.get('full_name'),
     )
 
+def generate_auto_note(gender_label, gender_conf, age_label, age_conf, selected_bones, measurements):
+    def conf_level(c):
+        if c >= 90: return "high"
+        if c >= 75: return "moderate"
+        return "low"
+
+    missing = [k for k, v in measurements.items() if not v or float(v) == 0]
+    present = [k for k, v in measurements.items() if v and float(v) > 0]
+
+    note = (
+        f"Auto-generated: {gender_label} ({conf_level(gender_conf)} confidence, {gender_conf}%), "
+        f"Age {age_label} yrs ({conf_level(age_conf)} confidence, {age_conf}%). "
+        f"Bones analysed: {', '.join(selected_bones)}. "
+        f"{len(present)} measurements recorded"
+        + (f"; {len(missing)} absent ({', '.join(missing[:3])}{'...' if len(missing) > 3 else ''})." if missing else ".")
+    )
+    return note
 
 @app.route('/predict', methods=['POST'])
 @login_required
@@ -247,10 +264,17 @@ def predict():
     age_conf  = round(float(np.max(avg_age)) * 100, 2)
     age_label = label_encoder.inverse_transform([age_pred])[0]
 
-    case_ref = save_prediction(
-        session['user_id'], gender_label, gender_conf,
-        age_label, age_conf, selected_bones, measurements,
-    )
+auto_note = generate_auto_note(
+    gender_label, gender_conf,
+    age_label, age_conf,
+    selected_bones, measurements
+)
+
+case_ref = save_prediction(
+    session['user_id'], gender_label, gender_conf,
+    age_label, age_conf, selected_bones, measurements,
+    notes=auto_note  
+)
 
     return render_template('result.html',
         gender=gender_label,
