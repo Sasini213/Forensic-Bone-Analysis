@@ -319,7 +319,7 @@ def update_notes(prediction_id):
 
 # ── PDF Report Generator ──────────────────────────────────────────────────────
 def generate_forensic_report(output, data):
-    from reportlab.pdfgen import canvas as rl_canvas
+    
     W, H = A4
     c = rl_canvas.Canvas(output, pagesize=A4)
 
