@@ -260,10 +260,11 @@ def predict():
     gender_conf  = round(float(np.max(avg_gender)) * 100, 2)
     gender_label = 'Female' if gender_pred == 1 else 'Male'
 
-   age_pred  = int(np.argmax(avg_age))
+    age_pred  = int(np.argmax(avg_age))
     age_conf  = round(float(np.max(avg_age)) * 100, 2)
     age_label = label_encoder.inverse_transform([age_pred])[0]
     age_label = str(age_label).strip().replace(' ', '').replace('_', '-')
+
     auto_note = generate_auto_note(
         gender_label, gender_conf,
         age_label, age_conf,
@@ -287,7 +288,6 @@ def predict():
         full_name=session.get('full_name'),
         measurements=measurements,
     )
-
 
 # ── History + API routes ──────────────────────────────────────────────────────
 
