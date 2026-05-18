@@ -591,10 +591,11 @@ def generate_forensic_report(output, data):
     c.save()
 
 
-@app.route('/download-report/<string:prediction_id>')
+@app.route('/download-report/<int:prediction_id>')
+@login_required
 def download_report(prediction_id):
     rows = get_user_predictions(session['user_id'])
-    pred = next((r for r in rows if r[2] == prediction_id), None)
+    pred = next((r for r in rows if r[0] == prediction_id), None)  # r[0] = id
     if not pred:
         abort(404)
 
@@ -609,9 +610,9 @@ def download_report(prediction_id):
         'sex_conf':     float(pred[4]),
         'age_range':    pred[5],
         'age_conf':     float(pred[6]),
-        'measurements': get_prediction_measurements(pred[0]),  # ← මේක change වුනා
-        'notes': pred[9] if len(pred) > 9 and pred[9] else '',
-}
+        'measurements': get_prediction_measurements(pred[0]),
+        'notes':        (pred[9] or '').strip() if len(pred) > 9 else '',
+    }
     buffer = io.BytesIO()
     generate_forensic_report(buffer, data)
     buffer.seek(0)
