@@ -263,7 +263,7 @@ def predict():
    age_pred  = int(np.argmax(avg_age))
     age_conf  = round(float(np.max(avg_age)) * 100, 2)
     age_label = label_encoder.inverse_transform([age_pred])[0]
-
+    age_label = str(age_label).strip().replace(' ', '').replace('_', '-')
     auto_note = generate_auto_note(
         gender_label, gender_conf,
         age_label, age_conf,
